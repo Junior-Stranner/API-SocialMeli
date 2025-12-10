@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Table(name = "tb_user")
@@ -14,7 +13,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
 
     @Column(name = "user_name", nullable = false, length = 80, unique = true)
     @Size(max = 80)
@@ -55,7 +54,7 @@ public class User {
             return;
         }
         this.followers.remove(follower);
-        follower.following.remove(this); // Sincroniza o outro lado
+        follower.following.remove(this);
     }
 
     public void follow(User user) {
@@ -92,11 +91,11 @@ public class User {
 
 
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -132,7 +131,6 @@ public class User {
         this.following = following;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -140,13 +138,9 @@ public class User {
 
         User user = (User) o;
 
-        return id.equals(user.id);
+        return id == user.id;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(name);
-    }
 
     @Override
     public String toString() {

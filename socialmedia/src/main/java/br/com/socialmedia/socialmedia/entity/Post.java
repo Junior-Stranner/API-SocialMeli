@@ -22,11 +22,12 @@ public class Post {
     @Column(name = "post_date", nullable = false)
     private LocalDate date;
 
-    @Embedded
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
     private Product product;
 
     @Column(nullable = false)
-    private Integer category;
+    private int category;
 
     @Column(nullable = false, precision = 12, scale = 2)
     @DecimalMax(value = "10000000.00")
@@ -39,5 +40,5 @@ public class Post {
     @Column(name = "discount", precision = 5, scale = 2)
     @DecimalMin("0.0")
     @DecimalMax("1.0")
-    private BigDecimal discount; // percentual (0.15 = 15%), ajuste se usar valor absoluto
+    private BigDecimal discount;
 }
