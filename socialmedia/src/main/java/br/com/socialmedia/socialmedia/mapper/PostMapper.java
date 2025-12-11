@@ -7,7 +7,6 @@ import br.com.socialmedia.socialmedia.entity.Post;
 import br.com.socialmedia.socialmedia.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
 import java.util.List;
 
