@@ -1,5 +1,3 @@
 package br.com.socialmedia.socialmedia.dto;
 
-public record FollowingDto(int id,
-                           String name) {
-}
+public record FollowingDto(int userId, String userName) { }

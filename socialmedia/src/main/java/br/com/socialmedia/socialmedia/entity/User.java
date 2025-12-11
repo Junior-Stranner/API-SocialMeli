@@ -32,14 +32,15 @@ public class User {
     @ManyToMany(mappedBy = "followers")
     private Set<User> following = new HashSet<>();
 
-    public User() {
-    }
 
-    public User(String name, boolean seller) {
+    public User(int id,String name, boolean seller) {
+        this.id = id;
         this.name = name;
         this.seller = seller;
     }
+    public User() {
 
+    }
 
     public void addFollower(User follower) {
         if (follower == null || follower.equals(this)) {
