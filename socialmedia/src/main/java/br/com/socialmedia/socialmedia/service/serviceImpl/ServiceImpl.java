@@ -3,6 +3,7 @@ package br.com.socialmedia.socialmedia.service.serviceImpl;
 import br.com.socialmedia.socialmedia.dto.FollowDto;
 import br.com.socialmedia.socialmedia.dto.FollowersCountDto;
 import br.com.socialmedia.socialmedia.dto.FollowersListDto;
+import br.com.socialmedia.socialmedia.dto.FollowingDto;
 import br.com.socialmedia.socialmedia.dto.response.UserResponse;
 import br.com.socialmedia.socialmedia.entity.User;
 import br.com.socialmedia.socialmedia.exception.BusinessException;
@@ -88,7 +89,16 @@ public class ServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> getFollowed(int userId, String order) {
-        return null;
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+
+        List<User> folowing = new ArrayList<>(user.getFollowing());
+
+        sortByName(folowing, order);
+
+        return folowing.stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -108,19 +118,18 @@ public class ServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
-        List<User> followers = new ArrayList<>(user.getFollowing());
+        List<User> followers = new ArrayList<>(user.getFollowers());
 
-        List<FollowDto> followingDto = userMapper.toFollowList(followers);
+        List<FollowDto> followersDto = userMapper.toFollowList(followers);
 
-
-        return null;
+        return new FollowersListDto(userId, user.getName(), followersDto);
     }
 
     private void sortByName(List<User> users, String order){
         if(order == null || order.isBlank() || order.equalsIgnoreCase("name_asc")){
             users.sort(Comparator.comparing(User::getName, String.CASE_INSENSITIVE_ORDER));
         }else if(order.equalsIgnoreCase("name_desc")){
-            users.sort(Comparator.comparing(User::getName, String.CASE_INSENSITIVE_ORDER.reversed());
+            users.sort(Comparator.comparing(User::getName, String.CASE_INSENSITIVE_ORDER.reversed()));
         }
     }
 }
