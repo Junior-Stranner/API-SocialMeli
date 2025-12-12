@@ -8,8 +8,8 @@ import java.util.List;
 
 public interface UserService {
 
-    void follow(int userId, int userIdToFollow);
-    void unfollow(int userId, int userIdToUnfollow);
+    UserResponse follow(int userId, int userIdToFollow);
+    UserResponse unfollow(int userId, int userIdToUnfollow);
 
     List<UserResponse> getFollowers(int userId, String order);
     List<UserResponse> getFollowed(int userId, String order);
