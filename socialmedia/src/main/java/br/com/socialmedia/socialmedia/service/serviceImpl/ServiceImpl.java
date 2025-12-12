@@ -29,7 +29,7 @@ public class ServiceImpl implements UserService {
     }
 
     @Override
-    public void follow(int userId, int userIdToFollow) {
+    public UserResponse follow(int userId, int userIdToFollow) {
         if (userId == userIdToFollow) {
             throw new BusinessException("User cannot follow themselves");
         }
@@ -50,10 +50,12 @@ public class ServiceImpl implements UserService {
 
         seller.addFollower(user);
         userRepository.save(seller);
+
+        return userMapper.toDto(seller);
     }
 
     @Override
-    public void unfollow(int userId, int userIdToUnfollow) {
+    public UserResponse unfollow(int userId, int userIdToUnfollow) {
         if (userId == userIdToUnfollow) {
             throw new BusinessException("User cannot unfollow themselves");
         }
@@ -70,6 +72,8 @@ public class ServiceImpl implements UserService {
 
         seller.removeFollower(user);
         userRepository.save(seller);
+
+        return userMapper.toDto(seller);
     }
 
     @Override
