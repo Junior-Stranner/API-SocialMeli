@@ -33,8 +33,7 @@ public class User {
     private Set<User> following = new HashSet<>();
 
 
-    public User(int id,String name, boolean seller) {
-        this.id = id;
+    public User(String name, boolean seller) {
         this.name = name;
         this.seller = seller;
     }

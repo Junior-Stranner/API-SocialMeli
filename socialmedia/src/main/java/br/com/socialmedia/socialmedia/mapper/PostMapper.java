@@ -5,24 +5,45 @@ import br.com.socialmedia.socialmedia.dto.request.PostRequest;
 import br.com.socialmedia.socialmedia.dto.response.PostResponse;
 import br.com.socialmedia.socialmedia.entity.Post;
 import br.com.socialmedia.socialmedia.entity.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {ProductMapper.class, UserMapper.class})
-public interface PostMapper {
+@Component
+public class PostMapper {
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "seller", ignore = true)
-    Post toEntity(PostRequest dto);
+    private final ModelMapper modelMapper;
 
-    @Mapping(target = "seller", source = "seller", qualifiedByName = "toSellerSummary")
-    PostResponse toDto(Post entity);
-
-    default SellerDto toSellerSummary(User seller) {
-        return seller == null ? null : new SellerDto(seller.getId(), seller.getName());
+    public PostMapper(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
     }
 
-    List<PostResponse> toResponseList(List<Post> posts);
+
+    public Post toEntity(PostRequest request) {
+        Post post = modelMapper.map(request, Post.class);
+        return post;
+    }
+
+    public PostResponse toDto(Post post) {
+        PostResponse response = modelMapper.map(post, PostResponse.class);
+        response.setSeller(toSellerSummary(post.getSeller()));
+        return response;
+    }
+
+
+
+    public SellerDto toSellerSummary(User seller) {
+        if (seller == null) {
+            return null;
+        }
+        return new SellerDto(seller.getId(), seller.getName());
+    }
+
+    public List<PostResponse> toResponseList(List<Post> posts) {
+        return posts.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 }
