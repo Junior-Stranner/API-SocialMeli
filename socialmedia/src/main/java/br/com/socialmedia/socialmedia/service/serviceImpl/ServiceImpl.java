@@ -3,7 +3,6 @@ package br.com.socialmedia.socialmedia.service.serviceImpl;
 import br.com.socialmedia.socialmedia.dto.FollowDto;
 import br.com.socialmedia.socialmedia.dto.FollowersCountDto;
 import br.com.socialmedia.socialmedia.dto.FollowersListDto;
-import br.com.socialmedia.socialmedia.dto.FollowingDto;
 import br.com.socialmedia.socialmedia.dto.response.UserResponse;
 import br.com.socialmedia.socialmedia.entity.User;
 import br.com.socialmedia.socialmedia.exception.BusinessException;
