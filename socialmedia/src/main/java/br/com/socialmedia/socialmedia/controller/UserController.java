@@ -3,7 +3,6 @@ package br.com.socialmedia.socialmedia.controller;
 import br.com.socialmedia.socialmedia.dto.FollowedListDto;
 import br.com.socialmedia.socialmedia.dto.FollowersCountDto;
 import br.com.socialmedia.socialmedia.dto.FollowersListDto;
-import br.com.socialmedia.socialmedia.dto.response.UserResponse;
 import br.com.socialmedia.socialmedia.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

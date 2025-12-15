@@ -11,6 +11,7 @@ import br.com.socialmedia.socialmedia.mapper.UserMapper;
 import br.com.socialmedia.socialmedia.repository.UserRepository;
 import br.com.socialmedia.socialmedia.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class ServiceImpl implements UserService {
         this.userMapper = userMapper;
     }
 
+    @Transactional
     @Override
     public UserResponse follow(int userId, int userIdToFollow) {
         if (userId == userIdToFollow) {
@@ -55,6 +57,7 @@ public class ServiceImpl implements UserService {
         return userMapper.toDto(seller);
     }
 
+    @Transactional
     @Override
     public UserResponse unfollow(int userId, int userIdToUnfollow) {
         if (userId == userIdToUnfollow) {
@@ -109,7 +112,7 @@ public class ServiceImpl implements UserService {
     public FollowersCountDto getFollowersCount(int userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-        int count = user.getFollowersCount();
+        int count = userRepository.countFollowers(userId);
         return new FollowersCountDto(
                 user.getId(),
                 user.getName(),
@@ -122,8 +125,11 @@ public class ServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
-        List<User> followers = new ArrayList<>(user.getFollowers());
-        sortByName(followers, order);
+        List<User> followers = ("name_desc".equalsIgnoreCase(order)
+                ? userRepository.findFollowersOrderByNameDesc(userId)
+                : userRepository.findFollowersOrderByNameAsc(userId));
+   //     List<User> followers = new ArrayList<>(user.getFollowers());
+   //     sortByName(followers, order);
 
         List<FollowDto> followersDto = userMapper.toFollowList(followers);
         return new FollowersListDto(userId, user.getName(), followersDto);
@@ -134,8 +140,11 @@ public class ServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
-        List<User> followed = new ArrayList<>(user.getFollowing());
-        sortByName(followed, order);
+        List<User> followed = ("name_desc".equalsIgnoreCase(order)
+                ? userRepository.findFollowedOrderByNameDesc(userId)
+                : userRepository.findFollowedOrderByNameAsc(userId));
+    //    List<User> followed = new ArrayList<>(user.getFollowing());
+    //    sortByName(followed, order);
 
         List<FollowDto> followedDto = userMapper.toFollowList(followed);
         return new FollowedListDto(userId, user.getName(), followedDto);

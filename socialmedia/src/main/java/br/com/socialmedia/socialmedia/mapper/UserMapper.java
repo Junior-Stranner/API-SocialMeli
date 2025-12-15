@@ -8,7 +8,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class UserMapper {
@@ -24,22 +23,18 @@ public class UserMapper {
     }
 
     public UserResponse toDto(User user) {
-        return modelMapper.map(user, UserResponse.class);
+        return new UserResponse(user.getId(), user.getName(), user.isSeller());
     }
 
     public FollowDto toFollow(User user) {
         return new FollowDto(user.getId(), user.getName());
     }
 
-    public List<UserResponse> toDtoList(List<User> users) {
-        return users.stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+    public List<FollowDto> toFollowList(List<User> users) {
+        return users.stream().map(this::toFollow).toList();
     }
 
-    public List<FollowDto> toFollowList(List<User> users) {
-        return users.stream()
-                .map(this::toFollow)
-                .collect(Collectors.toList());
+    public List<UserResponse> toDtoList(List<User> users) {
+        return users.stream().map(this::toDto).toList();
     }
 }
