@@ -1,6 +1,7 @@
 package br.com.socialmedia.socialmedia.service.serviceImpl;
 
 import br.com.socialmedia.socialmedia.dto.FollowDto;
+import br.com.socialmedia.socialmedia.dto.FollowedListDto;
 import br.com.socialmedia.socialmedia.dto.FollowersCountDto;
 import br.com.socialmedia.socialmedia.dto.FollowersListDto;
 import br.com.socialmedia.socialmedia.dto.response.UserResponse;
@@ -117,15 +118,27 @@ public class ServiceImpl implements UserService {
     }
 
     @Override
-    public FollowersListDto getFollowersList(int userId) {
+    public FollowersListDto getFollowersList(int userId, String order) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
         List<User> followers = new ArrayList<>(user.getFollowers());
+        sortByName(followers, order);
 
         List<FollowDto> followersDto = userMapper.toFollowList(followers);
-
         return new FollowersListDto(userId, user.getName(), followersDto);
+    }
+
+    @Override
+    public FollowedListDto getFollowedList(int userId, String order) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+
+        List<User> followed = new ArrayList<>(user.getFollowing());
+        sortByName(followed, order);
+
+        List<FollowDto> followedDto = userMapper.toFollowList(followed);
+        return new FollowedListDto(userId, user.getName(), followedDto);
     }
 
     private void sortByName(List<User> users, String order){

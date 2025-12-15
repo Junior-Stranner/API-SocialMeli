@@ -5,10 +5,10 @@ import br.com.socialmedia.socialmedia.dto.request.UserRequest;
 import br.com.socialmedia.socialmedia.dto.response.UserResponse;
 import br.com.socialmedia.socialmedia.entity.User;
 import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
@@ -28,25 +28,18 @@ public class UserMapper {
     }
 
     public FollowDto toFollow(User user) {
-        return modelMapper.map(user, FollowDto.class);
+        return new FollowDto(user.getId(), user.getName());
     }
 
     public List<UserResponse> toDtoList(List<User> users) {
         return users.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
-        }
-        public List<FollowDto> toFollowList(List<User> users) {
-            return users.stream()
-                    .map(this::toFollow)
-                    .collect(Collectors.toList());
-        }
     }
 
-  /*  User toEntity(UserRequest dto);
-
-    UserResponse toDto(User entity);
-
-    FollowDto toFollow(User entity);
-
-    List<FollowDto> toFollowList(List<User> users);*/
+    public List<FollowDto> toFollowList(List<User> users) {
+        return users.stream()
+                .map(this::toFollow)
+                .collect(Collectors.toList());
+    }
+}

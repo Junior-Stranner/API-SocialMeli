@@ -57,22 +57,6 @@ public class User {
         follower.following.remove(this);
     }
 
-    public void follow(User user) {
-        if (user == null || user.equals(this)) {
-            return;
-        }
-        this.following.add(user);
-        user.followers.add(this);
-    }
-
-    public void unfollow(User user) {
-        if (user == null) {
-            return;
-        }
-        this.following.remove(user);
-        user.followers.remove(this);
-    }
-
     public boolean isFollowing(User user) {
         return this.following.contains(user);
     }
@@ -141,7 +125,10 @@ public class User {
         return id == user.id;
     }
 
-
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
+    }
     @Override
     public String toString() {
         return "User{" +
