@@ -15,13 +15,13 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query(value  = "select u from tb_user u inner join user_followers uf on uf.follower_id = u.id " +
             "where uf.seller_id = : sellerid" +
-            "order by u.user_name like asc ", nativeQuery = true)
+            "order by u.user_name like asc ")
     List<User> findFollowersOrderByNameAsc(@Param("sellerId") int sellerId);
 
 
     @Query(value  = "select u from tb_user u inner join user_followers uf on uf.follower_id = u.id" +
             "where uf.seller_id = : sellerId"+
-            "order by u.user_name like desc", nativeQuery = true)
+            "order by u.user_name like desc")
     List<User> findFollowersOrderByNameDesc(@Param("sellerId") int sellerId);
 
 
@@ -31,16 +31,16 @@ public interface UserRepository extends JpaRepository<User, Integer> {
         inner join user_followers uf ON uf.seller_id = u.id
         where uf.follower_id = :userId
         order by u.user_name asc
-        """, nativeQuery = true)
+        """)
     List<User> findFollowedOrderByNameAsc(@Param("userId") int userId);
 
     @Query(value = """
         select u.*
-        from tb_user u
+        from tb_user
         iner join user_followers uf ON uf.seller_id = u.id
         where uf.follower_id = :userId
         order by u.user_name desc
-        """, nativeQuery = true)
+        """)
     List<User> findFollowedOrderByNameDesc(@Param("userId") int userId);
 
 }

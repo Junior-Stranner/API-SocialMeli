@@ -9,7 +9,7 @@ import br.com.socialmedia.socialmedia.exception.ConflictException;
 import java.util.List;
 
 public interface UserService {
-    UserResponse follow(int userId, int userIdToFollow);
+    UserResponse follow(int userId, int userIdToFollow) throws ConflictException;
     UserResponse unfollow(int userId, int userIdToUnfollow) throws ConflictException;
 
     FollowersCountDto getFollowersCount(int userId);

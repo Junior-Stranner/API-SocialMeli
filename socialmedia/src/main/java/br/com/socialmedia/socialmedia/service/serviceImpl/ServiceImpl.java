@@ -33,7 +33,7 @@ public class ServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserResponse follow(int userId, int userIdToFollow) {
+    public UserResponse follow(int userId, int userIdToFollow) throws ConflictException {
         if (userId == userIdToFollow) {
             throw new BusinessException("User cannot follow themselves");
         }
@@ -49,7 +49,7 @@ public class ServiceImpl implements UserService {
         }
 
         if (user.isFollowing(seller)) {
-            throw new BusinessException("User " + userId + " is already following user " + userIdToFollow);
+            throw new ConflictException("User " + userId + " is already following user " + userIdToFollow);
         }
 
         seller.addFollower(user);
@@ -70,6 +70,10 @@ public class ServiceImpl implements UserService {
 
         User seller = userRepository.findById(userIdToUnfollow)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userIdToUnfollow + " not found"));
+
+        if (!seller.isSeller()) {
+            throw new BusinessException("User " + userIdToUnfollow + " is not a seller");
+        }
 
         if (!user.isFollowing(seller)) {
             throw new ConflictException("User " + userId + " is not following user " + userIdToUnfollow);

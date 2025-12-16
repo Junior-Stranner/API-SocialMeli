@@ -1,6 +1,6 @@
 package br.com.socialmedia.socialmedia.exception;
 
-public class ConflictException extends Throwable {
+public class ConflictException extends RuntimeException {
     public ConflictException(String message) {
         super(message);
     }

@@ -1,3 +1,17 @@
-FROM eclipse-temurin:21-jdk
-COPY target/*.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+#build
+FROM maven:3.9.7-eclipse-temurin AS build
+WORKDIR /app
+COPY pom.xml ./
+COPY src ./src
+
+RUN mvn package
+
+#runtime
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+ARG  JAR_FILE=target/*.jar
+COPY --from=build /app/${JAR_FILE} app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+LABEL authors="joaofilho"

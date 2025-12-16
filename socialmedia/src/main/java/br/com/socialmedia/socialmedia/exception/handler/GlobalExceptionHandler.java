@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
                 status.value(),
                 status.getReasonPhrase(),
                 ex.getMessage(),
-                request.getRequestURI() // ou request.getRequestURL().toString()
+                request.getRequestURI()
         );
 
         return ResponseEntity.status(status).body(body);
