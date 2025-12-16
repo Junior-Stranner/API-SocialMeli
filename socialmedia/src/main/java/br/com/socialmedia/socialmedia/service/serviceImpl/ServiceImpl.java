@@ -7,6 +7,7 @@ import br.com.socialmedia.socialmedia.dto.FollowersListDto;
 import br.com.socialmedia.socialmedia.dto.response.UserResponse;
 import br.com.socialmedia.socialmedia.entity.User;
 import br.com.socialmedia.socialmedia.exception.BusinessException;
+import br.com.socialmedia.socialmedia.exception.ConflictException;
 import br.com.socialmedia.socialmedia.mapper.UserMapper;
 import br.com.socialmedia.socialmedia.repository.UserRepository;
 import br.com.socialmedia.socialmedia.service.UserService;
@@ -59,7 +60,7 @@ public class ServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserResponse unfollow(int userId, int userIdToUnfollow) {
+    public UserResponse unfollow(int userId, int userIdToUnfollow) throws ConflictException {
         if (userId == userIdToUnfollow) {
             throw new BusinessException("User cannot unfollow themselves");
         }
@@ -71,7 +72,7 @@ public class ServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userIdToUnfollow + " not found"));
 
         if (!user.isFollowing(seller)) {
-            throw new BusinessException("User " + userId + " is not following user " + userIdToUnfollow);
+            throw new ConflictException("User " + userId + " is not following user " + userIdToUnfollow);
         }
 
         seller.removeFollower(user);
@@ -99,7 +100,7 @@ public class ServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
-        List<User> folowing = new ArrayList<>(user.getFollowing());
+        List<User> folowing = new ArrayList<>(user.getFollowed());
 
         sortByName(folowing, order);
 

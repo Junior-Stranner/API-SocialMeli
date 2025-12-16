@@ -30,7 +30,7 @@ public class User {
     private Set<User> followers = new HashSet<>();
 
     @ManyToMany(mappedBy = "followers")
-    private Set<User> following = new HashSet<>();
+    private Set<User> followed = new HashSet<>();
 
 
     public User(String name, boolean seller) {
@@ -46,7 +46,7 @@ public class User {
             return;
         }
         this.followers.add(follower);
-        follower.following.add(this);
+        follower.followed.add(this);
     }
 
     public void removeFollower(User follower) {
@@ -54,11 +54,11 @@ public class User {
             return;
         }
         this.followers.remove(follower);
-        follower.following.remove(this);
+        follower.followed.remove(this);
     }
 
     public boolean isFollowing(User user) {
-        return this.following.contains(user);
+        return this.followed.contains(user);
     }
 
     public boolean isFollowedBy(User user) {
@@ -69,8 +69,8 @@ public class User {
         return this.followers.size();
     }
 
-    public int getFollowingCount() {
-        return this.following.size();
+    public int getFollowedCount() {
+        return this.followed.size();
     }
 
 
@@ -107,12 +107,12 @@ public class User {
         this.followers = followers;
     }
 
-    public Set<User> getFollowing() {
-        return following;
+    public Set<User> getFollowed() {
+        return followed;
     }
 
-    public void setFollowing(Set<User> following) {
-        this.following = following;
+    public void setFollowed(Set<User> followed) {
+        this.followed = followed;
     }
 
     @Override
@@ -136,7 +136,7 @@ public class User {
                 ", name='" + name + '\'' +
                 ", seller=" + seller +
                 ", followersCount=" + followers.size() +
-                ", followingCount=" + following.size() +
+                ", followedCount=" + followed.size() +
                 '}';
     }
 }
