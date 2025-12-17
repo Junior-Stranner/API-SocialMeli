@@ -16,10 +16,8 @@ public class PostResponse {
     private boolean hasPromo;
     private BigDecimal discount;
 
-    // Construtor vazio
     public PostResponse() {}
 
-    // Getters e Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

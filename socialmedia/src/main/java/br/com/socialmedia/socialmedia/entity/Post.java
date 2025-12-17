@@ -1,56 +1,54 @@
 package br.com.socialmedia.socialmedia.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "posts")
+@Table(name = "tb_post")
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int postId;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id")
-    private User seller;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "post_date", nullable = false)
+    @Column(nullable = false)
     private LocalDate date;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @Embedded
     private Product product;
 
     @Column(nullable = false)
     private int category;
 
-    @Column(nullable = false, precision = 12, scale = 2)
-    @DecimalMax(value = "10000000.00")
-    @DecimalMin("0.01")
-    private BigDecimal price;
+    @Column(nullable = false)
+    private double price;
 
     @Column(name = "has_promo", nullable = false)
     private boolean hasPromo;
 
-    @Column(name = "discount", precision = 5, scale = 2)
-    @DecimalMin("0.0")
-    @DecimalMax("1.0")
-    private BigDecimal discount;
+    @Column(nullable = false)
+    private double discount;
 
-    public Post() {
+    public Post() {}
+
+    public int getPostId() {
+        return postId;
     }
 
-    public User getSeller() {
-        return seller;
+    public void setPostId(int postId) {
+        this.postId = postId;
     }
 
-    public void setSeller(User seller) {
-        this.seller = seller;
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public LocalDate getDate() {
@@ -77,11 +75,11 @@ public class Post {
         this.category = category;
     }
 
-    public BigDecimal getPrice() {
+    public double getPrice() {
         return price;
     }
 
-    public void setPrice(BigDecimal price) {
+    public void setPrice(double price) {
         this.price = price;
     }
 
@@ -93,11 +91,26 @@ public class Post {
         this.hasPromo = hasPromo;
     }
 
-    public BigDecimal getDiscount() {
+    public double getDiscount() {
         return discount;
     }
 
-    public void setDiscount(BigDecimal discount) {
+    public void setDiscount(double discount) {
         this.discount = discount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Post post = (Post) o;
+
+        return postId == post.postId;
+    }
+
+    @Override
+    public int hashCode() {
+        return postId;
     }
 }

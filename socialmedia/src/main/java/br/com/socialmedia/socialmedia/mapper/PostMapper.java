@@ -1,7 +1,7 @@
 package br.com.socialmedia.socialmedia.mapper;
 
 import br.com.socialmedia.socialmedia.dto.SellerDto;
-import br.com.socialmedia.socialmedia.dto.request.PostRequest;
+import br.com.socialmedia.socialmedia.dto.request.PostPublishRequest;
 import br.com.socialmedia.socialmedia.dto.response.PostResponse;
 import br.com.socialmedia.socialmedia.entity.Post;
 import br.com.socialmedia.socialmedia.entity.User;
@@ -21,7 +21,7 @@ public class PostMapper {
     }
 
 
-    public Post toEntity(PostRequest request) {
+    public Post toEntity(PostPublishRequest request) {
         Post post = modelMapper.map(request, Post.class);
         return post;
     }
