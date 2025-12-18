@@ -4,7 +4,7 @@ import jakarta.validation.constraints.*;
 
 public record ProductRequest(
         @Min(value = 1, message = "product_id must be greater than zero")
-        int product_id,
+        int productId,
 
         @NotBlank @Size(max = 40)
         @Pattern(regexp = "^[A-Za-zÀ-ÖØ-öø-ÿ0-9 ]+$", message = "product_name must not contain special characters")

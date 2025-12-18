@@ -6,12 +6,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public interface PostRepository extends JpaRepository<Post, Integer> {
 
-    List<Post> findByUserInAndDateAfterOrderByDateDesc(List<User> users, LocalDate date);
+    List<Post> findByUserIdAndHasPromoTrueOrderByDateDesc(int userId);
 
     long countByUserIdAndHasPromoTrue(int userId);
 
-    List<Post> findByUserIdAndHasPromoTrueOrderByDateDesc(int userId);
+    List<Post> findByUserInAndDateAfterOrderByDateDesc(Set<User> users, LocalDate date);
 }

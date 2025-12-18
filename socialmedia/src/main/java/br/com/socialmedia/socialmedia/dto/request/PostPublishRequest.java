@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 public record PostPublishRequest(
         @Min(value = 1, message = "user_id must be greater than zero")
-        int user_id,
+        int userId,
 
         @NotNull(message = "date must not be null")
         @JsonFormat(pattern = "dd-MM-yyyy")

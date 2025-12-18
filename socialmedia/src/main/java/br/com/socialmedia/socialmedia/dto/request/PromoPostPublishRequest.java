@@ -7,7 +7,7 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 public record PromoPostPublishRequest(
-        @Min(1) int user_id,
+        @Min(1) int userId,
 
         @NotNull
         @JsonFormat(pattern = "dd-MM-yyyy")

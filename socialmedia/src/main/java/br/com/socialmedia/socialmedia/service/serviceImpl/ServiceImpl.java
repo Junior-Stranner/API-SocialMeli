@@ -133,8 +133,6 @@ public class ServiceImpl implements IUserService {
         List<User> followers = ("name_desc".equalsIgnoreCase(order)
                 ? userRepository.findFollowersOrderByNameDesc(userId)
                 : userRepository.findFollowersOrderByNameAsc(userId));
-   //     List<User> followers = new ArrayList<>(user.getFollowers());
-   //     sortByName(followers, order);
 
         List<FollowDto> followersDto = userMapper.toFollowList(followers);
         return new FollowersListDto(userId, user.getName(), followersDto);
@@ -148,8 +146,6 @@ public class ServiceImpl implements IUserService {
         List<User> followed = ("name_desc".equalsIgnoreCase(order)
                 ? userRepository.findFollowedOrderByNameDesc(userId)
                 : userRepository.findFollowedOrderByNameAsc(userId));
-    //    List<User> followed = new ArrayList<>(user.getFollowing());
-    //    sortByName(followed, order);
 
         List<FollowDto> followedDto = userMapper.toFollowList(followed);
         return new FollowedListDto(userId, user.getName(), followedDto);

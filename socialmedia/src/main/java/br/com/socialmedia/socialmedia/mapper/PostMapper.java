@@ -38,8 +38,6 @@ public class PostMapper {
         return response;
     }
 
-
-
     public SellerDto toSellerSummary(User seller) {
         if (seller == null) {
             return null;

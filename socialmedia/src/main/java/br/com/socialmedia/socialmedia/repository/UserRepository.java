@@ -13,8 +13,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     int countFollowers(@Param("sellerId") int sellerId);
 
 
-    // Busca seguidores ordenados por nome ASC
-    // Busca seguidores de um vendedor ordenados por nome ASC
     @Query("""
     SELECT f FROM User u
     JOIN u.followers f
@@ -24,7 +22,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findFollowersOrderByNameAsc(@Param("sellerId") int sellerId);
 
 
-    // Busca seguidores de um vendedor ordenados por nome DESC
     @Query("""
     SELECT f FROM User u
     JOIN u.followers f
@@ -34,7 +31,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findFollowersOrderByNameDesc(@Param("sellerId") int sellerId);
 
 
-    // Busca vendedores seguidos por um usuário ordenados por nome ASC
     @Query("""
     SELECT f FROM User u
     JOIN u.followed f
@@ -44,7 +40,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findFollowedOrderByNameAsc(@Param("userId") int userId);
 
 
-    // Busca vendedores seguidos por um usuário ordenados por nome DESC
     @Query("""
     SELECT f FROM User u
     JOIN u.followed f
