@@ -2,6 +2,7 @@ package br.com.socialmedia.socialmedia.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Id;
 
 @Embeddable
 public class Product {

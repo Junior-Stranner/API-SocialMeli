@@ -2,6 +2,7 @@ package br.com.socialmedia.socialmedia.mapper;
 
 import br.com.socialmedia.socialmedia.dto.SellerDto;
 import br.com.socialmedia.socialmedia.dto.request.PostPublishRequest;
+import br.com.socialmedia.socialmedia.dto.request.PromoPostPublishRequest;
 import br.com.socialmedia.socialmedia.dto.response.PostResponse;
 import br.com.socialmedia.socialmedia.entity.Post;
 import br.com.socialmedia.socialmedia.entity.User;
@@ -26,9 +27,14 @@ public class PostMapper {
         return post;
     }
 
+    public Post toEntity(PromoPostPublishRequest request) {
+        Post post = modelMapper.map(request, Post.class);
+        return post;
+    }
+
     public PostResponse toDto(Post post) {
         PostResponse response = modelMapper.map(post, PostResponse.class);
-        response.setSeller(toSellerSummary(post.getSeller()));
+        response.setSeller(toSellerSummary(post.getUser()));
         return response;
     }
 

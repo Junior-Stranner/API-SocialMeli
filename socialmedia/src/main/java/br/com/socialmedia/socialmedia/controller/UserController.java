@@ -3,19 +3,17 @@ package br.com.socialmedia.socialmedia.controller;
 import br.com.socialmedia.socialmedia.dto.FollowedListDto;
 import br.com.socialmedia.socialmedia.dto.FollowersCountDto;
 import br.com.socialmedia.socialmedia.dto.FollowersListDto;
-import br.com.socialmedia.socialmedia.service.UserService;
+import br.com.socialmedia.socialmedia.service.IUserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
 
-    private final UserService userService;
+    private final IUserService userService;
 
-    public UserController(UserService userService) {
+    public UserController(IUserService userService) {
         this.userService = userService;
     }
 

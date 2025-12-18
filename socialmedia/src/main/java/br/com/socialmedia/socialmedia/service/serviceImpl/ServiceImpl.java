@@ -10,7 +10,7 @@ import br.com.socialmedia.socialmedia.exception.BusinessException;
 import br.com.socialmedia.socialmedia.exception.ConflictException;
 import br.com.socialmedia.socialmedia.mapper.UserMapper;
 import br.com.socialmedia.socialmedia.repository.UserRepository;
-import br.com.socialmedia.socialmedia.service.UserService;
+import br.com.socialmedia.socialmedia.service.IUserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class ServiceImpl implements UserService {
+public class ServiceImpl implements IUserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
