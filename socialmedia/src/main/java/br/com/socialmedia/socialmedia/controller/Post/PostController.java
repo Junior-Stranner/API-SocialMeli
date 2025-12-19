@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/posts")
-public class PostController {
+public class PostController implements PostControllerDocs{
 
     private final IPostService postService;
 

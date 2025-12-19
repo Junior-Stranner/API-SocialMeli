@@ -34,6 +34,9 @@ public class PostMapper {
 
     public PostResponse toDto(Post post) {
         PostResponse response = modelMapper.map(post, PostResponse.class);
+        response.setUserId(post.getUser().getId());
+        response.setPostId(post.getPostId());
+
         response.setSeller(toSellerSummary(post.getUser()));
         return response;
     }

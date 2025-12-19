@@ -35,8 +35,8 @@ public class PostServiceImpl implements IPostService {
 
     @Override
     public void publish(PostPublishRequest request) {
-        User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + request.userId() + " not found"));
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + request.getUserId() + " not found"));
 
      if(!user.isSeller()){
          throw new BusinessException("User " + user.getId() + " is not a seller");
@@ -72,20 +72,20 @@ public class PostServiceImpl implements IPostService {
 
     @Override
     public void publishPromo(PromoPostPublishRequest request) {
-        User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + request.userId() + " not found"));
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + request.getUserId() + " not found"));
 
         if(!user.isSeller()) {
             throw new BusinessException("User " + user.getId() + " is not a seller");
         }
 
-        validatePromoDiscount(request.discount());
+        validatePromoDiscount(request.getDiscount());
 
         Post entity = postMapper.toEntity(request);
         entity.setUser(user);
         // US-0005: post normal
         entity.setHasPromo(true);
-        entity.setDiscount(request.discount());
+        entity.setDiscount(request.getDiscount());
 
         postRepository.save(entity);
     }

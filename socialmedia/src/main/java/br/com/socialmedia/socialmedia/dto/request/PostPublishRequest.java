@@ -1,6 +1,7 @@
 package br.com.socialmedia.socialmedia.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -8,21 +9,67 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
-public record PostPublishRequest(
+public class PostPublishRequest {
+
+   //     @JsonProperty("user_id")
         @Min(value = 1, message = "user_id must be greater than zero")
-        int userId,
+        private int userId;
 
         @NotNull(message = "date must not be null")
         @JsonFormat(pattern = "dd-MM-yyyy")
-        LocalDate date,
+        private LocalDate date;
 
-        @Valid @NotNull(message = "product must not be null")
-        ProductRequest product,
+        @Valid
+        @NotNull(message = "product must not be null")
+        private ProductRequest product;
 
         @Min(value = 1, message = "category must be greater than zero")
-        int category,
+        private int category;
 
         @NotNull(message = "price must not be null")
         @Max(value = 10_000_000, message = "price must be <= 10000000")
-        Double price
-) {}
+        private Double price;
+
+        public PostPublishRequest() {
+        }
+
+        public int getUserId() {
+                return userId;
+        }
+
+        public void setUserId(int userId) {
+                this.userId = userId;
+        }
+
+        public LocalDate getDate() {
+                return date;
+        }
+
+        public void setDate(LocalDate date) {
+                this.date = date;
+        }
+
+        public ProductRequest getProduct() {
+                return product;
+        }
+
+        public void setProduct(ProductRequest product) {
+                this.product = product;
+        }
+
+        public int getCategory() {
+                return category;
+        }
+
+        public void setCategory(int category) {
+                this.category = category;
+        }
+
+        public Double getPrice() {
+                return price;
+        }
+
+        public void setPrice(Double price) {
+                this.price = price;
+        }
+}

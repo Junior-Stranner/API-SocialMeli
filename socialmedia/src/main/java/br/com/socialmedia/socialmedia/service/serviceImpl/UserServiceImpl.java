@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class ServiceImpl implements IUserService {
+public class UserServiceImpl implements IUserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public ServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
     }
