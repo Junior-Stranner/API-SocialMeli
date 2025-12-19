@@ -7,7 +7,7 @@ public class ProductResponse {
 //    @JsonProperty("product_id")
     private int productId;
 
-    @JsonProperty("product_name")
+//    @JsonProperty("product_name")
     private String productName;
 
     private String type;

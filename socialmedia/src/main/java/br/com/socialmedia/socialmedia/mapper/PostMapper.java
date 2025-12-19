@@ -5,6 +5,7 @@ import br.com.socialmedia.socialmedia.dto.request.PostPublishRequest;
 import br.com.socialmedia.socialmedia.dto.request.PromoPostPublishRequest;
 import br.com.socialmedia.socialmedia.dto.response.PostResponse;
 import br.com.socialmedia.socialmedia.entity.Post;
+import br.com.socialmedia.socialmedia.entity.Product;
 import br.com.socialmedia.socialmedia.entity.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,11 @@ public class PostMapper {
 
     public Post toEntity(PromoPostPublishRequest request) {
         Post post = modelMapper.map(request, Post.class);
+
+        if (request.getProduct() != null) {
+            Product p = modelMapper.map(request.getProduct(), Product.class);
+            post.setProduct(p);
+        }
         return post;
     }
 

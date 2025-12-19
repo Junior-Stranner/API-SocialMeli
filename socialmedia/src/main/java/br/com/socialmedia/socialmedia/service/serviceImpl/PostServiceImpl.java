@@ -42,11 +42,12 @@ public class PostServiceImpl implements IPostService {
          throw new BusinessException("User " + user.getId() + " is not a seller");
        }
 
-       Post entity = postMapper.toEntity(request);
+        Post entity = postMapper.toEntity(request);
+        entity.setPostId(0);
         entity.setUser(user);
-        // US-0005: post normal
         entity.setHasPromo(false);
         entity.setDiscount(0.0);
+        postRepository.save(entity);
 
         postRepository.save(entity);
     }
@@ -56,7 +57,6 @@ public class PostServiceImpl implements IPostService {
 
        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-
 
         LocalDate since = LocalDate.now().minusWeeks(2);
 
@@ -78,12 +78,11 @@ public class PostServiceImpl implements IPostService {
         if(!user.isSeller()) {
             throw new BusinessException("User " + user.getId() + " is not a seller");
         }
-
         validatePromoDiscount(request.getDiscount());
 
         Post entity = postMapper.toEntity(request);
+        entity.setPostId(0);
         entity.setUser(user);
-        // US-0005: post normal
         entity.setHasPromo(true);
         entity.setDiscount(request.getDiscount());
 
