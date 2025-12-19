@@ -1,4 +1,4 @@
-package br.com.socialmedia.socialmedia.controller;
+package br.com.socialmedia.socialmedia.controller.User;
 
 import br.com.socialmedia.socialmedia.dto.FollowedListDto;
 import br.com.socialmedia.socialmedia.dto.FollowersCountDto;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
-public class UserController {
+public class UserController implements UserControllerDocs{
 
     private final IUserService userService;
 

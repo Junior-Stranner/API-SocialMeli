@@ -8,7 +8,7 @@ import br.com.socialmedia.socialmedia.dto.response.PromoPostsResponse;
 import org.springframework.stereotype.Service;
 
 @Service
-public interface IPostServuce {
+public interface IPostService {
 
     // US-0005
     void publish(PostPublishRequest request);

@@ -17,7 +17,6 @@ public interface IUserService {
     FollowersListDto getFollowersList(int userId, String order);
     FollowedListDto getFollowedList(int userId, String order);
 
-    // Se quiser manter os "extras"
     List<UserResponse> getFollowers(int userId, String order);
     List<UserResponse> getFollowed(int userId, String order);
 }

@@ -11,7 +11,7 @@ import br.com.socialmedia.socialmedia.exception.BusinessException;
 import br.com.socialmedia.socialmedia.mapper.PostMapper;
 import br.com.socialmedia.socialmedia.repository.PostRepository;
 import br.com.socialmedia.socialmedia.repository.UserRepository;
-import br.com.socialmedia.socialmedia.service.IPostServuce;
+import br.com.socialmedia.socialmedia.service.IPostService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class PostServiceImpl implements IPostServuce {
+public class PostServiceImpl implements IPostService {
 
     private final UserRepository userRepository;
     private final PostMapper postMapper;
@@ -49,7 +49,6 @@ public class PostServiceImpl implements IPostServuce {
         entity.setDiscount(0.0);
 
         postRepository.save(entity);
-
     }
 
     @Override
