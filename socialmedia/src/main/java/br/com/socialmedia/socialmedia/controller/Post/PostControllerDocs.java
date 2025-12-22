@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Posts", description = "Endpoints de publicações, feed (últimas 2 semanas) e promoções")
-@RequestMapping("/api/v1/posts")
 public interface PostControllerDocs {
 
     @Operation(

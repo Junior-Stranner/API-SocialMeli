@@ -41,17 +41,7 @@ public class UserServiceImpl implements IUserService {
         User seller = userRepository.findById(userIdToFollow)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userIdToFollow + " not found"));
 
-        if (!seller.isSeller()) {
-            throw new BusinessException("User " + userIdToFollow + " is not a seller");
-        }
-
-        if (user.isSeller()) {
-            throw new BusinessException("Seller cannot follow another seller");
-        }
-
-        if (user.isFollowing(seller)) {
-            throw new ConflictException("User " + userId + " is already following user " + userIdToFollow);
-        }
+        validateFollow(user, seller);
 
         seller.addFollower(user);
         userRepository.save(seller);
@@ -72,17 +62,7 @@ public class UserServiceImpl implements IUserService {
         User seller = userRepository.findById(userIdToUnfollow)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userIdToUnfollow + " not found"));
 
-        if (!seller.isSeller()) {
-            throw new BusinessException("User " + userIdToUnfollow + " is not a seller");
-        }
-
-        if (user.isSeller()) {
-            throw new BusinessException("Seller cannot unfollow another seller");
-        }
-
-        if (!user.isFollowing(seller)) {
-            throw new ConflictException("User " + userId + " is not following user " + userIdToUnfollow);
-        }
+        validateUnfollow(user, seller);
 
         seller.removeFollower(user);
         userRepository.save(seller);
@@ -126,6 +106,31 @@ public class UserServiceImpl implements IUserService {
 
         List<FollowDto> followedDto = userMapper.toFollowList(followed);
         return new FollowedListDto(userId, user.getName(), followedDto);
+    }
+
+    private void validateFollow(User follower, User seller) {
+        if (!seller.isSeller()) {
+            throw new BusinessException("User " + seller.getId() + " is not a seller");
+        }
+
+        if (follower.isSeller()) {
+            throw new BusinessException("Seller cannot follow another seller");
+        }
+
+        if (follower.isFollowing(seller)) {
+            throw new ConflictException("User " + follower.getId() + " is already following user " + seller.getId());
+        }
+    }
+    private void validateUnfollow(User follower, User seller) {
+        if (!seller.isSeller()) {
+            throw new BusinessException("User " + seller.getId() + " is not a seller");
+        }
+        if (follower.isSeller()) {
+            throw new BusinessException("Seller cannot unfollow another seller");
+        }
+        if (!follower.isFollowing(seller)) {
+            throw new ConflictException("User " + follower.getId() + " is not following user " + seller.getId());
+        }
     }
 
     private String normalize(String order, String defaultValue) {

@@ -11,7 +11,6 @@ import java.time.LocalDate;
 
 public class PostPublishRequest {
 
-   //     @JsonProperty("user_id")
         @Min(value = 1, message = "user_id must be greater than zero")
         private int userId;
 

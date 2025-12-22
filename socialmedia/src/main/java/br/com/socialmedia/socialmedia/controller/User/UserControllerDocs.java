@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Users", description = "Endpoints de usuários: seguir, deixar de seguir, contagem e listagem de seguidores/seguidos")
-@RequestMapping("/api/v1/users")
 public interface UserControllerDocs {
 
     @Operation(

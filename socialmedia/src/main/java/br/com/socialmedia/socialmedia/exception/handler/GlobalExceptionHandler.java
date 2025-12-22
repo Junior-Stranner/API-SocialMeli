@@ -6,6 +6,8 @@ import br.com.socialmedia.socialmedia.exception.BusinessException;
 import br.com.socialmedia.socialmedia.exception.ConflictException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,6 +20,8 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDetails> handleValidation(MethodArgumentNotValidException ex,
@@ -107,10 +111,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDetails> handleGeneric(Exception ex,
-                                                      HttpServletRequest request) {
-        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+    public ResponseEntity<ErrorDetails> handleGeneric(Exception ex, HttpServletRequest request) {
+        log.error("Unhandled exception on {}", request.getRequestURI(), ex);
 
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         ErrorDetails body = new ErrorDetails(
                 Instant.now(),
                 status.value(),
@@ -118,7 +122,6 @@ public class GlobalExceptionHandler {
                 "Unexpected error",
                 request.getRequestURI()
         );
-
         return ResponseEntity.status(status).body(body);
     }
 }
