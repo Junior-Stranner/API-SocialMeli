@@ -32,30 +32,29 @@ public class PostServiceImpl implements IPostService {
         this.postRepository = postRepository;
     }
 
-
     @Override
     public void publish(PostPublishRequest request) {
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + request.getUserId() + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "User with id " + request.getUserId() + " not found"
+                ));
 
-     if(!user.isSeller()){
-         throw new BusinessException("User " + user.getId() + " is not a seller");
-       }
+        if (!user.isSeller()) {
+            throw new BusinessException("User " + user.getId() + " is not a seller");
+        }
 
         Post entity = postMapper.toEntity(request);
         entity.setPostId(0);
         entity.setUser(user);
         entity.setHasPromo(false);
         entity.setDiscount(0.0);
-        postRepository.save(entity);
 
         postRepository.save(entity);
     }
 
     @Override
     public FollowedPostsResponse getFollowedPostsLastTwoWeeks(int userId, String order) {
-
-       User user = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
         LocalDate since = LocalDate.now().minusWeeks(2);
@@ -64,20 +63,24 @@ public class PostServiceImpl implements IPostService {
         if (followed == null || followed.isEmpty()) {
             return new FollowedPostsResponse(userId, List.of());
         }
-        List<Post> promoPosts = postRepository.findByUserInAndDateAfterOrderByDateDesc(followed, since);
-        promoPosts = sortPost(promoPosts, order);
 
-        return new FollowedPostsResponse(userId, promoPosts.stream().map(postMapper::toDto).toList());
+        List<Post> posts = postRepository.findByUserInAndDateAfterOrderByDateDesc(followed, since);
+        posts = sortPost(posts, order);
+
+        return new FollowedPostsResponse(userId, posts.stream().map(postMapper::toDto).toList());
     }
 
     @Override
     public void publishPromo(PromoPostPublishRequest request) {
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + request.getUserId() + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "User with id " + request.getUserId() + " not found"
+                ));
 
-        if(!user.isSeller()) {
+        if (!user.isSeller()) {
             throw new BusinessException("User " + user.getId() + " is not a seller");
         }
+
         validatePromoDiscount(request.getDiscount());
 
         Post entity = postMapper.toEntity(request);
@@ -126,13 +129,13 @@ public class PostServiceImpl implements IPostService {
         if (discount > 100) throw new BusinessException("Discount cannot be greater than 100");
     }
 
-    public List<Post> sortPost(List<Post> posts, String order){
+    private List<Post> sortPost(List<Post> posts, String order) {
         if (order == null || order.isBlank() || order.equalsIgnoreCase("date_desc")) {
             return posts;
         }
         if (order.equalsIgnoreCase("date_asc")) {
             return posts.stream()
-                    .sorted((a,b) -> a.getDate().compareTo(b.getDate()))
+                    .sorted((a, b) -> a.getDate().compareTo(b.getDate()))
                     .toList();
         }
         throw new BusinessException("Invalid order param: " + order);

@@ -8,35 +8,23 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
+import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorDetails> handleBusiness(BusinessException ex, HttpServletRequest request) {
-        HttpStatus status = HttpStatus.CONFLICT;
-
-        ErrorDetails body = new ErrorDetails(
-                Instant.now(),
-                status.value(),
-                status.getReasonPhrase(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-
-        return ResponseEntity.status(status).body(body);
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorDetails> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorDetails> handleValidation(MethodArgumentNotValidException ex,
+                                                         HttpServletRequest request) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
-        var fieldErrors = ex.getBindingResult()
+        List<FieldErrorResponse> fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(err -> new FieldErrorResponse(err.getField(), err.getDefaultMessage()))
@@ -47,15 +35,32 @@ public class GlobalExceptionHandler {
                 status.value(),
                 status.getReasonPhrase(),
                 "Validation failed",
-                request.getRequestURI(), // ou request.getRequestURL().toString()
+                request.getRequestURI(),
                 fieldErrors
         );
 
         return ResponseEntity.status(status).body(body);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorDetails> handleNotReadable(HttpMessageNotReadableException ex,
+                                                          HttpServletRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        ErrorDetails body = new ErrorDetails(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                "Malformed JSON or invalid field format",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorDetails> handleNotFound(EntityNotFoundException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorDetails> handleNotFound(EntityNotFoundException ex,
+                                                       HttpServletRequest request) {
         HttpStatus status = HttpStatus.NOT_FOUND;
 
         ErrorDetails body = new ErrorDetails(
@@ -69,9 +74,41 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
-    // Opcional: fallback para não vazar stacktrace
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorDetails> handleConflict(ConflictException ex,
+                                                       HttpServletRequest request) {
+        HttpStatus status = HttpStatus.CONFLICT;
+
+        ErrorDetails body = new ErrorDetails(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ErrorDetails> handleBusiness(BusinessException ex,
+                                                       HttpServletRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        ErrorDetails body = new ErrorDetails(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDetails> handleGeneric(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorDetails> handleGeneric(Exception ex,
+                                                      HttpServletRequest request) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
         ErrorDetails body = new ErrorDetails(
@@ -80,22 +117,6 @@ public class GlobalExceptionHandler {
                 status.getReasonPhrase(),
                 "Unexpected error",
                 request.getRequestURI()
-        );
-
-        return ResponseEntity.status(status).body(body);
-    }
-
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ErrorDetails> handleConflict(ConflictException ex, HttpServletRequest request) {
-        HttpStatus status = HttpStatus.CONFLICT;
-
-        ErrorDetails body = new ErrorDetails(
-                Instant.now(),
-                status.value(),
-                status.getReasonPhrase(),
-                ex.getMessage(),
-                request.getRequestURI(),
-                null
         );
 
         return ResponseEntity.status(status).body(body);

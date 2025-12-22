@@ -15,10 +15,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -33,7 +30,7 @@ public class UserServiceImpl implements IUserService {
 
     @Transactional
     @Override
-    public UserResponse follow(int userId, int userIdToFollow) throws ConflictException {
+    public UserResponse follow(int userId, int userIdToFollow) {
         if (userId == userIdToFollow) {
             throw new BusinessException("User cannot follow themselves");
         }
@@ -48,6 +45,10 @@ public class UserServiceImpl implements IUserService {
             throw new BusinessException("User " + userIdToFollow + " is not a seller");
         }
 
+        if (user.isSeller()) {
+            throw new BusinessException("Seller cannot follow another seller");
+        }
+
         if (user.isFollowing(seller)) {
             throw new ConflictException("User " + userId + " is already following user " + userIdToFollow);
         }
@@ -60,7 +61,7 @@ public class UserServiceImpl implements IUserService {
 
     @Transactional
     @Override
-    public UserResponse unfollow(int userId, int userIdToUnfollow) throws ConflictException {
+    public UserResponse unfollow(int userId, int userIdToUnfollow) {
         if (userId == userIdToUnfollow) {
             throw new BusinessException("User cannot unfollow themselves");
         }
@@ -75,6 +76,10 @@ public class UserServiceImpl implements IUserService {
             throw new BusinessException("User " + userIdToUnfollow + " is not a seller");
         }
 
+        if (user.isSeller()) {
+            throw new BusinessException("Seller cannot unfollow another seller");
+        }
+
         if (!user.isFollowing(seller)) {
             throw new ConflictException("User " + userId + " is not following user " + userIdToUnfollow);
         }
@@ -86,43 +91,11 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public List<UserResponse> getFollowers(int userId, String order) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-
-        List<User> followed = new ArrayList<>(user.getFollowers());
-
-        sortByName(followed, order);
-
-        return followed.stream()
-                .map(userMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<UserResponse> getFollowed(int userId, String order) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-
-        List<User> folowing = new ArrayList<>(user.getFollowed());
-
-        sortByName(folowing, order);
-
-        return folowing.stream()
-                .map(userMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public FollowersCountDto getFollowersCount(int userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         int count = userRepository.countFollowers(userId);
-        return new FollowersCountDto(
-                user.getId(),
-                user.getName(),
-                count
-        );
+        return new FollowersCountDto(user.getId(), user.getName(), count);
     }
 
     @Override
@@ -130,9 +103,11 @@ public class UserServiceImpl implements IUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
-        List<User> followers = ("name_desc".equalsIgnoreCase(order)
-                ? userRepository.findFollowersOrderByNameDesc(userId)
-                : userRepository.findFollowersOrderByNameAsc(userId));
+        List<User> followers = switch (normalize(order, "name_asc")) {
+            case "name_desc" -> userRepository.findFollowersOrderByNameDesc(userId);
+            case "name_asc"  -> userRepository.findFollowersOrderByNameAsc(userId);
+            default -> throw new BusinessException("Invalid order param: " + order);
+        };
 
         List<FollowDto> followersDto = userMapper.toFollowList(followers);
         return new FollowersListDto(userId, user.getName(), followersDto);
@@ -143,19 +118,18 @@ public class UserServiceImpl implements IUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
-        List<User> followed = ("name_desc".equalsIgnoreCase(order)
-                ? userRepository.findFollowedOrderByNameDesc(userId)
-                : userRepository.findFollowedOrderByNameAsc(userId));
+        List<User> followed = switch (normalize(order, "name_asc")) {
+            case "name_desc" -> userRepository.findFollowedOrderByNameDesc(userId);
+            case "name_asc"  -> userRepository.findFollowedOrderByNameAsc(userId);
+            default -> throw new BusinessException("Invalid order param: " + order);
+        };
 
         List<FollowDto> followedDto = userMapper.toFollowList(followed);
         return new FollowedListDto(userId, user.getName(), followedDto);
     }
 
-    private void sortByName(List<User> users, String order){
-        if(order == null || order.isBlank() || order.equalsIgnoreCase("name_asc")){
-            users.sort(Comparator.comparing(User::getName, String.CASE_INSENSITIVE_ORDER));
-        }else if(order.equalsIgnoreCase("name_desc")){
-            users.sort(Comparator.comparing(User::getName, String.CASE_INSENSITIVE_ORDER.reversed()));
-        }
+    private String normalize(String order, String defaultValue) {
+        if (order == null || order.isBlank()) return defaultValue;
+        return order.toLowerCase();
     }
 }
