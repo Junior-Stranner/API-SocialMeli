@@ -29,7 +29,7 @@ class PostServiceImplTest {
     @Mock private PostMapper postMapper;
     @Mock private PostRepository postRepository;
 
-    @InjectMocks private PostServiceImpl service;
+    @InjectMocks private PostServiceImpl postService;
 
     @Test
     void publish_shouldSavePost_whenUserIsSeller() {
@@ -58,7 +58,7 @@ class PostServiceImplTest {
         when(postMapper.toEntity(req)).thenReturn(entity);
 
         // Act
-        service.publish(req);
+        postService.publish(req);
 
         // Assert
         assertFalse(entity.isHasPromo());
@@ -83,7 +83,7 @@ class PostServiceImplTest {
         when(userRepository.findById(1)).thenReturn(Optional.of(buyer));
 
         // Act + Assert
-        assertThrows(BusinessException.class, () -> service.publish(req));
+        assertThrows(BusinessException.class, () -> postService.publish(req));
         verify(postRepository, never()).save(any());
     }
 
@@ -104,7 +104,7 @@ class PostServiceImplTest {
         when(userRepository.findById(2)).thenReturn(Optional.of(seller));
 
         // Act + Assert
-        assertThrows(BusinessException.class, () -> service.publishPromo(req));
+        assertThrows(BusinessException.class, () -> postService.publishPromo(req));
         verify(postRepository, never()).save(any());
     }
 
@@ -117,7 +117,7 @@ class PostServiceImplTest {
         when(userRepository.findById(1)).thenReturn(Optional.of(buyer));
 
         // Act + Assert
-        assertThrows(BusinessException.class, () -> service.getPromoCount(1));
+        assertThrows(BusinessException.class, () -> postService.getPromoCount(1));
     }
 
     @Test
@@ -130,11 +130,11 @@ class PostServiceImplTest {
         when(userRepository.findById(1)).thenReturn(Optional.of(buyer));
 
         // Act
-        var response = service.getFollowedPostsLastTwoWeeks(1, "date_desc");
+        var response = postService.getFollowedPostsLastTwoWeeks(1, "date_desc");
 
         // Assert
         assertNotNull(response);
-        assertTrue(response.posts().isEmpty() || response.getPosts().isEmpty()); // depende do seu DTO
+        assertTrue(response.posts().isEmpty() || response.posts().isEmpty());
         verifyNoInteractions(postRepository);
     }
 
@@ -154,6 +154,6 @@ class PostServiceImplTest {
                 .thenReturn(List.of());
 
         // Act + Assert
-        assertThrows(BusinessException.class, () -> service.getFollowedPostsLastTwoWeeks(1, "date_xxx"));
+        assertThrows(BusinessException.class, () -> postService.getFollowedPostsLastTwoWeeks(1, "date_xxx"));
     }
 }

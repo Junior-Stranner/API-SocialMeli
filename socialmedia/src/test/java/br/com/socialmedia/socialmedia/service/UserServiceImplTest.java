@@ -12,9 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.TypeToken;
 
-import javax.swing.text.html.Option;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,25 +20,19 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceImplTest {
+class UserServiceImplTest {
 
     @Mock
-    private final UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Mock
-    private final UserMapper userMapper;
+    private UserMapper userMapper;
 
-    @Mock
-    private final UserServiceImpl userService;
-
-    public UserServiceImplTest(UserRepository userRepository, UserMapper userMapper, UserServiceImpl userService) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.userService = userService;
-    }
+    @InjectMocks
+    private UserServiceImpl userService;
 
     @Test
-    public void follow_success_whenBuyerFollowsSeller(){
+    void follow_success_whenBuyerFollowsSeller() {
         // Arrange
         int buyerId = 1;
         int sellerId = 2;
@@ -55,7 +47,7 @@ public class UserServiceImplTest {
         when(userRepository.findById(sellerId)).thenReturn(Optional.of(seller));
         when(userMapper.toDto(any(User.class))).thenReturn(null);
 
-        //ACT
+        // Act
         userService.follow(buyerId, sellerId);
 
         // Assert
@@ -64,34 +56,32 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void follow_shouldThrowBusinessException_whenUserFollowsSelf(){
-        assertThrows(BusinessException.class, () -> userService.follow(1,2));
+    void follow_shouldThrowBusinessException_whenUserFollowsSelf() {
+        assertThrows(BusinessException.class, () -> userService.follow(1, 1));
         verifyNoInteractions(userRepository);
+        verifyNoInteractions(userMapper);
     }
 
     @Test
-    public void follow_shouldThrowBusinessException_whenTargetIsNotSeller(){
-        // Arrange
-
+    void follow_shouldThrowBusinessException_whenTargetIsNotSeller() {
         int buyerId = 1;
         int targetId = 2;
 
         User buyer = new User("Junior", false);
         buyer.setId(buyerId);
-        User targetSeller = new User("Alice", false);
-        targetSeller.setId(targetId);
+
+        User target = new User("Alice", false);
+        target.setId(targetId);
 
         when(userRepository.findById(buyerId)).thenReturn(Optional.of(buyer));
-        when(userRepository.findById(targetId)).thenReturn(Optional.of(targetSeller));
+        when(userRepository.findById(targetId)).thenReturn(Optional.of(target));
 
-        // Act + Assert
         assertThrows(BusinessException.class, () -> userService.follow(buyerId, targetId));
         verify(userRepository, never()).save(any());
     }
 
     @Test
-    public void follow_shouldThrowConflictException_whenAlreadyFollowing() {
-        // Arrange
+    void follow_shouldThrowConflictException_whenAlreadyFollowing() {
         int buyerId = 1;
         int sellerId = 2;
 
@@ -101,21 +91,17 @@ public class UserServiceImplTest {
         User seller = new User("José", true);
         seller.setId(sellerId);
 
-        // Simula que já segue
-        seller.addFollower(buyer);
+        seller.addFollower(buyer); // já segue
 
         when(userRepository.findById(buyerId)).thenReturn(Optional.of(buyer));
         when(userRepository.findById(sellerId)).thenReturn(Optional.of(seller));
 
-        // Act + Assert
         assertThrows(ConflictException.class, () -> userService.follow(buyerId, sellerId));
         verify(userRepository, never()).save(any());
-
     }
 
     @Test
-    public void unfollow_success_whenFollowing(){
-        // Arrange
+    void unfollow_success_whenFollowing() {
         int buyerId = 1;
         int sellerId = 2;
 
@@ -125,24 +111,20 @@ public class UserServiceImplTest {
         User seller = new User("José", true);
         seller.setId(sellerId);
 
-        //buyer está seguindo seller
         seller.addFollower(buyer);
 
         when(userRepository.findById(buyerId)).thenReturn(Optional.of(buyer));
         when(userRepository.findById(sellerId)).thenReturn(Optional.of(seller));
+        when(userMapper.toDto(any(User.class))).thenReturn(null);
 
-        //ACT
         userService.unfollow(buyerId, sellerId);
 
-        // Assert
         verify(userRepository).save(seller);
         assertFalse(buyer.isFollowing(seller));
-
     }
 
     @Test
     void unfollow_shouldThrowConflictException_whenNotFollowing() {
-        // Arrange
         int buyerId = 1;
         int sellerId = 2;
 
@@ -155,12 +137,11 @@ public class UserServiceImplTest {
         when(userRepository.findById(buyerId)).thenReturn(Optional.of(buyer));
         when(userRepository.findById(sellerId)).thenReturn(Optional.of(seller));
 
-        // Act + Assert
         assertThrows(ConflictException.class, () -> userService.unfollow(buyerId, sellerId));
         verify(userRepository, never()).save(any());
     }
 
-        @Test
+    @Test
     void follow_shouldThrowNotFound_whenBuyerDoesNotExist() {
         when(userRepository.findById(1)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> userService.follow(1, 2));
