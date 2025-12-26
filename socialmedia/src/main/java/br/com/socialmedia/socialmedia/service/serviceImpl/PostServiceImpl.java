@@ -10,6 +10,7 @@ import br.com.socialmedia.socialmedia.entity.User;
 import br.com.socialmedia.socialmedia.exception.BusinessException;
 import br.com.socialmedia.socialmedia.mapper.PostMapper;
 import br.com.socialmedia.socialmedia.repository.PostRepository;
+import br.com.socialmedia.socialmedia.repository.UserFollowRepository;
 import br.com.socialmedia.socialmedia.repository.UserRepository;
 import br.com.socialmedia.socialmedia.service.IPostService;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,18 +18,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class PostServiceImpl implements IPostService {
 
     private final UserRepository userRepository;
+    private final UserFollowRepository followRepository;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
 
-    public PostServiceImpl(UserRepository userRepository, PostMapper postMapper, PostRepository postRepository) {
+    public PostServiceImpl(UserRepository userRepository,
+                           UserFollowRepository followRepository,
+                           PostMapper postMapper,
+                           PostRepository postRepository) {
         this.userRepository = userRepository;
+        this.followRepository = followRepository;
         this.postMapper = postMapper;
         this.postRepository = postRepository;
     }
@@ -54,18 +60,24 @@ public class PostServiceImpl implements IPostService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public FollowedPostsResponse getFollowedPostsLastTwoWeeks(int userId, String order) {
-        User user = userRepository.findById(userId)
+        // valida se buyer existe
+        userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
         LocalDate since = LocalDate.now().minusWeeks(2);
 
-        Set<User> followed = user.getFollowed();
-        if (followed == null || followed.isEmpty()) {
+        // pega sellers seguidos via query (sem LAZY)
+        List<User> followedSellers = followRepository.findFollowedSellers(userId);
+        if (followedSellers == null || followedSellers.isEmpty()) {
             return new FollowedPostsResponse(userId, List.of());
         }
 
-        List<Post> posts = postRepository.findByUserInAndDateAfterOrderByDateDesc(followed, since);
+        List<Post> posts = postRepository.findByUserInAndDateAfterOrderByDateDesc(
+                new HashSet<>(followedSellers), since
+        );
+
         posts = sortPost(posts, order);
 
         return new FollowedPostsResponse(userId, posts.stream().map(postMapper::toDto).toList());
@@ -106,9 +118,11 @@ public class PostServiceImpl implements IPostService {
         return new PromoCountResponse(userId, user.getName(), Math.toIntExact(count));
     }
 
+    @Override
     @Transactional(readOnly = true)
     public PromoPostsResponse getPromoPostsForFollower(int buyerId, int sellerId) {
-        User buyer = userRepository.findById(buyerId)
+
+        userRepository.findById(buyerId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + buyerId + " not found"));
 
         User seller = userRepository.findById(sellerId)
@@ -118,7 +132,7 @@ public class PostServiceImpl implements IPostService {
             throw new BusinessException("User " + seller.getId() + " is not a seller");
         }
 
-        if (!buyer.isFollowing(seller)) {
+        if (!followRepository.existsByFollowerIdAndSellerId(buyerId, sellerId)) {
             throw new BusinessException("Buyer does not follow this seller");
         }
 

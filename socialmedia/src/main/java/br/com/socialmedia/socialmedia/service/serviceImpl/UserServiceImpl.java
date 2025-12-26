@@ -6,9 +6,11 @@ import br.com.socialmedia.socialmedia.dto.FollowersCountDto;
 import br.com.socialmedia.socialmedia.dto.FollowersListDto;
 import br.com.socialmedia.socialmedia.dto.response.UserResponse;
 import br.com.socialmedia.socialmedia.entity.User;
+import br.com.socialmedia.socialmedia.entity.UserFollow;
 import br.com.socialmedia.socialmedia.exception.BusinessException;
 import br.com.socialmedia.socialmedia.exception.ConflictException;
 import br.com.socialmedia.socialmedia.mapper.UserMapper;
+import br.com.socialmedia.socialmedia.repository.UserFollowRepository;
 import br.com.socialmedia.socialmedia.repository.UserRepository;
 import br.com.socialmedia.socialmedia.service.IUserService;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,10 +23,14 @@ import java.util.List;
 public class UserServiceImpl implements IUserService {
 
     private final UserRepository userRepository;
+    private final UserFollowRepository followRepository;
     private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository,
+                           UserFollowRepository followRepository,
+                           UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.followRepository = followRepository;
         this.userMapper = userMapper;
     }
 
@@ -35,17 +41,15 @@ public class UserServiceImpl implements IUserService {
             throw new BusinessException("User cannot follow themselves");
         }
 
-        User user = userRepository.findById(userId)
+        User buyer = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
         User seller = userRepository.findById(userIdToFollow)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userIdToFollow + " not found"));
 
-        validateFollow(user, seller);
+        validateFollow(buyer, seller);
 
-        seller.addFollower(user);
-        userRepository.save(seller);
-
+        followRepository.save(new UserFollow(buyer, seller));
         return userMapper.toDto(seller);
     }
 
@@ -56,80 +60,90 @@ public class UserServiceImpl implements IUserService {
             throw new BusinessException("User cannot unfollow themselves");
         }
 
-        User user = userRepository.findById(userId)
+        User buyer = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
         User seller = userRepository.findById(userIdToUnfollow)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userIdToUnfollow + " not found"));
 
-        validateUnfollow(user, seller);
+        validateUnfollow(buyer, seller);
 
-        seller.removeFollower(user);
-        userRepository.save(seller);
-
+        followRepository.deleteByFollowerIdAndSellerId(buyer.getId(), seller.getId());
         return userMapper.toDto(seller);
     }
 
     @Override
     public FollowersCountDto getFollowersCount(int userId) {
-        User user = userRepository.findById(userId)
+        User seller = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-        int count = userRepository.countFollowers(userId);
-        return new FollowersCountDto(user.getId(), user.getName(), count);
+
+        if (!seller.isSeller()) {
+            throw new BusinessException("User " + seller.getId() + " is not a seller");
+        }
+
+        int count = (int) followRepository.countBySellerId(userId);
+        return new FollowersCountDto(seller.getId(), seller.getName(), count);
     }
 
     @Override
     public FollowersListDto getFollowersList(int userId, String order) {
-        User user = userRepository.findById(userId)
+        User seller = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
+        if (!seller.isSeller()) {
+            throw new BusinessException("User " + seller.getId() + " is not a seller");
+        }
+
         List<User> followers = switch (normalize(order, "name_asc")) {
-            case "name_desc" -> userRepository.findFollowersOrderByNameDesc(userId);
-            case "name_asc"  -> userRepository.findFollowersOrderByNameAsc(userId);
+            case "name_desc" -> followRepository.findFollowersOrderByNameDesc(userId);
+            case "name_asc" -> followRepository.findFollowersOrderByNameAsc(userId);
             default -> throw new BusinessException("Invalid order param: " + order);
         };
 
         List<FollowDto> followersDto = userMapper.toFollowList(followers);
-        return new FollowersListDto(userId, user.getName(), followersDto);
+        return new FollowersListDto(userId, seller.getName(), followersDto);
     }
 
     @Override
     public FollowedListDto getFollowedList(int userId, String order) {
-        User user = userRepository.findById(userId)
+        User buyer = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
+        if (buyer.isSeller()) {
+            throw new BusinessException("Seller cannot follow another seller");
+        }
+
         List<User> followed = switch (normalize(order, "name_asc")) {
-            case "name_desc" -> userRepository.findFollowedOrderByNameDesc(userId);
-            case "name_asc"  -> userRepository.findFollowedOrderByNameAsc(userId);
+            case "name_desc" -> followRepository.findFollowedOrderByNameDesc(userId);
+            case "name_asc" -> followRepository.findFollowedOrderByNameAsc(userId);
             default -> throw new BusinessException("Invalid order param: " + order);
         };
 
         List<FollowDto> followedDto = userMapper.toFollowList(followed);
-        return new FollowedListDto(userId, user.getName(), followedDto);
+        return new FollowedListDto(userId, buyer.getName(), followedDto);
     }
 
-    private void validateFollow(User follower, User seller) {
+    private void validateFollow(User buyer, User seller) {
         if (!seller.isSeller()) {
             throw new BusinessException("User " + seller.getId() + " is not a seller");
         }
-
-        if (follower.isSeller()) {
+        if (buyer.isSeller()) {
             throw new BusinessException("Seller cannot follow another seller");
         }
-
-        if (follower.isFollowing(seller)) {
-            throw new ConflictException("User " + follower.getId() + " is already following user " + seller.getId());
+        if (followRepository.existsByFollowerIdAndSellerId(buyer.getId(), seller.getId())) {
+            throw new ConflictException("User " + buyer.getId() + " is already following user " + seller.getId());
         }
     }
-    private void validateUnfollow(User follower, User seller) {
+
+    private void validateUnfollow(User buyer, User seller) {
         if (!seller.isSeller()) {
             throw new BusinessException("User " + seller.getId() + " is not a seller");
         }
-        if (follower.isSeller()) {
+        if (buyer.isSeller()) {
             throw new BusinessException("Seller cannot unfollow another seller");
         }
-        if (!follower.isFollowing(seller)) {
-            throw new ConflictException("User " + follower.getId() + " is not following user " + seller.getId());
+        if (!followRepository.existsByFollowerIdAndSellerId(buyer.getId(), seller.getId())) {
+            throw new ConflictException("User " + buyer.getId() + " is not following user " + seller.getId());
         }
     }
 

@@ -9,7 +9,7 @@ public class UserFollow {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     // Quem segue (buyer)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -37,7 +37,7 @@ public class UserFollow {
         this.followedAt = LocalDateTime.now();
     }
 
-    public Long getId() { return id; }
+    public int getId() { return id; }
     public User getFollower() { return follower; }
     public User getSeller() { return seller; }
     public LocalDateTime getFollowedAt() { return followedAt; }
