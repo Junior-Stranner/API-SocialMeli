@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
-@Table(name = "tb_user")
+@Table(name = "TB_USER")
 @Entity
 public class User {
 
@@ -15,7 +15,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "user_name", nullable = false, length = 80, unique = true)
+    @Column(name = "USER_NAME", nullable = false, length = 80, unique = true)
     @Size(max = 80)
     @NotBlank
     private String name;

@@ -14,6 +14,7 @@ import br.com.socialmedia.socialmedia.repository.UserRepository;
 import br.com.socialmedia.socialmedia.service.IPostService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -105,6 +106,7 @@ public class PostServiceImpl implements IPostService {
         return new PromoCountResponse(userId, user.getName(), Math.toIntExact(count));
     }
 
+    @Transactional(readOnly = true)
     public PromoPostsResponse getPromoPostsForFollower(int buyerId, int sellerId) {
         User buyer = userRepository.findById(buyerId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + buyerId + " not found"));
@@ -121,6 +123,7 @@ public class PostServiceImpl implements IPostService {
         }
 
         List<Post> promoPosts = postRepository.findByUserIdAndHasPromoTrueOrderByDateDesc(sellerId);
+
         return new PromoPostsResponse(
                 sellerId,
                 seller.getName(),
