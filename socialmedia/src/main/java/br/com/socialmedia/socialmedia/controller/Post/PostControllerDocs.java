@@ -107,6 +107,7 @@ public interface PostControllerDocs {
     @GetMapping("/products/promo-post/list")
     ResponseEntity<PromoPostsResponse> getPromoPosts(
             @Parameter(in = ParameterIn.QUERY, description = "ID do seller", example = "2")
-            @RequestParam int userId
+            @RequestParam int sellerId,
+            @RequestParam int buyerId
     );
 }

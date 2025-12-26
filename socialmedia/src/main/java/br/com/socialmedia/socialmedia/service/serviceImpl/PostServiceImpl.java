@@ -105,20 +105,25 @@ public class PostServiceImpl implements IPostService {
         return new PromoCountResponse(userId, user.getName(), Math.toIntExact(count));
     }
 
-    @Override
-    public PromoPostsResponse getPromoPosts(int userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+    public PromoPostsResponse getPromoPostsForFollower(int buyerId, int sellerId) {
+        User buyer = userRepository.findById(buyerId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + buyerId + " not found"));
 
-        if (!user.isSeller()) {
-            throw new BusinessException("User " + user.getId() + " is not a seller");
+        User seller = userRepository.findById(sellerId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + sellerId + " not found"));
+
+        if (!seller.isSeller()) {
+            throw new BusinessException("User " + seller.getId() + " is not a seller");
         }
 
-        List<Post> promoPosts = postRepository.findByUserIdAndHasPromoTrueOrderByDateDesc(userId);
+        if (!buyer.isFollowing(seller)) {
+            throw new BusinessException("Buyer does not follow this seller");
+        }
 
+        List<Post> promoPosts = postRepository.findByUserIdAndHasPromoTrueOrderByDateDesc(sellerId);
         return new PromoPostsResponse(
-                userId,
-                user.getName(),
+                sellerId,
+                seller.getName(),
                 promoPosts.stream().map(postMapper::toDto).toList()
         );
     }
