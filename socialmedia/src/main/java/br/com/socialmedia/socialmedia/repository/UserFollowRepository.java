@@ -55,4 +55,7 @@ public interface UserFollowRepository extends JpaRepository<UserFollow, Integer>
     where uf.follower.id = :buyerId
 """)
     List<User> findFollowedSellers(int buyerId);
+
+
+
 }

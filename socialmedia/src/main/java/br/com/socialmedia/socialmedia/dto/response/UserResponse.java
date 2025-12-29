@@ -1,7 +1,9 @@
 package br.com.socialmedia.socialmedia.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record UserResponse(
-        int id,
-        String name,
-        boolean seller
-){}
+        @JsonProperty("user_id") int userId,
+        @JsonProperty("user_name") String userName,
+        @JsonProperty("is_seller") boolean seller
+) {}

@@ -1,8 +1,10 @@
 package br.com.socialmedia.socialmedia.dto.response;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record PromoCountResponse(
-        int userId,
-        String userName,
-        int count
+        @JsonProperty("user_id") int userId,
+        @JsonProperty("user_name") String userName,
+        @JsonProperty("promo_products_count") int promoProductsCount
 ) {}

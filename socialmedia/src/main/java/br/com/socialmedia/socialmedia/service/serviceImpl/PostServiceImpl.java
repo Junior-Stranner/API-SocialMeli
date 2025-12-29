@@ -62,7 +62,6 @@ public class PostServiceImpl implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public FollowedPostsResponse getFollowedPostsLastTwoWeeks(int userId, String order) {
-        // valida se buyer existe
         userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
@@ -148,8 +147,7 @@ public class PostServiceImpl implements IPostService {
             throw new BusinessException("Buyer does not follow this seller");
         }
 
-        List<Post> promoPosts = postRepository.findByUserIdAndHasPromoTrueOrderByDateDesc(sellerId);
-
+        List<Post> promoPosts = postRepository.findPromoPostsBySellerIdFetchUser(sellerId);
         return new PromoPostsResponse(
                 sellerId,
                 seller.getName(),
