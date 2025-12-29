@@ -17,4 +17,6 @@ public interface IPostService {
     PromoCountResponse getPromoCount(int userId);
 
     PromoPostsResponse getPromoPostsForFollower(int buyerId, int sellerId);
+
+    PromoPostsResponse getPromoPosts(int userId);
 }

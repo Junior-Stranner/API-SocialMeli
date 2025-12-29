@@ -48,4 +48,11 @@ public interface UserFollowRepository extends JpaRepository<UserFollow, Integer>
         order by uf.seller.name desc
     """)
     List<User> findFollowedOrderByNameDesc(int buyerId);
+
+    @Query("""
+    select uf.seller
+    from UserFollow uf
+    where uf.follower.id = :buyerId
+""")
+    List<User> findFollowedSellers(int buyerId);
 }

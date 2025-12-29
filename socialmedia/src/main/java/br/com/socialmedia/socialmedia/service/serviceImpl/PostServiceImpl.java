@@ -118,6 +118,18 @@ public class PostServiceImpl implements IPostService {
         return new PromoCountResponse(userId, user.getName(), Math.toIntExact(count));
     }
 
+    public PromoPostsResponse getPromoPosts(int userId) {
+        User seller = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+
+        if (!seller.isSeller()) throw new BusinessException("User " + seller.getId() + " is not a seller");
+
+        List<Post> promoPosts = postRepository.findByUserIdAndHasPromoTrueOrderByDateDesc(userId);
+
+        return new PromoPostsResponse(userId, seller.getName(),
+                promoPosts.stream().map(postMapper::toDto).toList());
+    }
+
     @Override
     @Transactional(readOnly = true)
     public PromoPostsResponse getPromoPostsForFollower(int buyerId, int sellerId) {

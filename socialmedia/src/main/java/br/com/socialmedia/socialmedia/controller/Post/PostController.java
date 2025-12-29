@@ -49,11 +49,16 @@ public class PostController implements PostControllerDocs{
     }
 
     @GetMapping("/products/promo-post/list")
-    public ResponseEntity<PromoPostsResponse> getPromoPosts(
+    public ResponseEntity<PromoPostsResponse> getPromoPosts(@RequestParam int userId) {
+        return ResponseEntity.ok(postService.getPromoPosts(userId));
+    }
+
+
+    @GetMapping("/products/promo-post/list/follower")
+    public ResponseEntity<PromoPostsResponse> getPromoPostsForFollower(
             @RequestParam int buyerId,
             @RequestParam int sellerId
     ) {
-        PromoPostsResponse response = postService.getPromoPostsForFollower(buyerId, sellerId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(postService.getPromoPostsForFollower(buyerId, sellerId));
     }
 }
