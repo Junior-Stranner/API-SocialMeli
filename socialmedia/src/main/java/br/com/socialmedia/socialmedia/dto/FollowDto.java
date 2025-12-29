@@ -1,4 +1,8 @@
 package br.com.socialmedia.socialmedia.dto;
 
-public record FollowDto(int userId, String userName){
-}
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record FollowDto(
+        @JsonProperty("user_id") int userId,
+        @JsonProperty("user_name") String userName
+) {}

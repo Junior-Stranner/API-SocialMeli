@@ -36,10 +36,10 @@ public class PostController implements PostControllerDocs{
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/products/promo-post")
+    @PostMapping("/products/promo-pub")
     public ResponseEntity<Void> publishPromo(@Valid @RequestBody PromoPostPublishRequest request) {
         postService.publishPromo(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping("/products/promo-post/count")

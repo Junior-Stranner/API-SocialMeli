@@ -67,7 +67,6 @@ public class PostServiceImpl implements IPostService {
 
         LocalDate since = LocalDate.now().minusWeeks(2);
 
-        // pega sellers seguidos via query (sem LAZY)
         List<User> followedSellers = followRepository.findFollowedSellers(userId);
         if (followedSellers == null || followedSellers.isEmpty()) {
             return new FollowedPostsResponse(userId, List.of());
@@ -117,16 +116,22 @@ public class PostServiceImpl implements IPostService {
         return new PromoCountResponse(userId, user.getName(), Math.toIntExact(count));
     }
 
+    @Override
     public PromoPostsResponse getPromoPosts(int userId) {
         User seller = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
-        if (!seller.isSeller()) throw new BusinessException("User " + seller.getId() + " is not a seller");
+        if (!seller.isSeller()) {
+            throw new BusinessException("User " + seller.getId() + " is not a seller");
+        }
 
-        List<Post> promoPosts = postRepository.findByUserIdAndHasPromoTrueOrderByDateDesc(userId);
+        List<Post> promoPosts = postRepository.findPromoPostsBySellerIdFetchUser(userId);
 
-        return new PromoPostsResponse(userId, seller.getName(),
-                promoPosts.stream().map(postMapper::toDto).toList());
+        return new PromoPostsResponse(
+                userId,
+                seller.getName(),
+                promoPosts.stream().map(postMapper::toDto).toList()
+        );
     }
 
     @Override
