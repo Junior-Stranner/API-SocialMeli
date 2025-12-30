@@ -8,7 +8,9 @@ import br.com.socialmedia.socialmedia.mapper.UserMapper;
 import br.com.socialmedia.socialmedia.repository.UserFollowRepository;
 import br.com.socialmedia.socialmedia.repository.UserRepository;
 import br.com.socialmedia.socialmedia.service.serviceImpl.UserServiceImpl;
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.EntityNotFoundException;  // ← Import correto
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,165 +19,129 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("UserService - Testes Unitários")
 class UserServiceImplTest {
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private UserFollowRepository followRepository;
+    @Mock private UserMapper userMapper;
+    @InjectMocks private UserServiceImpl userService;
 
-    @Mock
-    private UserFollowRepository followRepository;
+    private User buyer1;
+    private User buyer2;
+    private User seller;
 
-    @Mock
-    private UserMapper userMapper;
-
-    @InjectMocks
-    private UserServiceImpl userService;
-
-    /**
-     * T-0001 (US-0001)
-     * Verificar se o usuário a ser seguido existe.
-     * - Se não existe: lança exceção (EntityNotFoundException)
-     */
-    @Test
-    void T0001_follow_shouldThrowNotFound_whenUserToFollowDoesNotExist() {
-        int buyerId = 1;
-        int sellerId = 2;
-
-        User buyer = new User("Buyer", false);
-        buyer.setId(buyerId);
-
-        when(userRepository.findById(buyerId)).thenReturn(Optional.of(buyer));
-        when(userRepository.findById(sellerId)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> userService.follow(buyerId, sellerId));
-
-        verifyNoInteractions(followRepository);
-        verifyNoInteractions(userMapper);
+    @BeforeEach
+    void setUp() {
+        buyer1 = createUser(1, "Buyer1", false);
+        buyer2 = createUser(2, "Buyer2", false);
+        seller = createUser(3, "Seller", true);
     }
 
-    /**
-     * Caso "cumprida" do T-0001:
-     * usuário existe -> segue normalmente (não precisa validar retorno aqui, só que salva follow)
-     */
+    // ==================================================================================
+    // US-0001: Seguir um vendedor (T-0001)
+    // ==================================================================================
+
     @Test
-    void follow_shouldFollow_whenUserToFollowExists() {
-        int buyerId = 1;
-        int sellerId = 2;
+    @DisplayName("T-0001: Deve lançar EntityNotFoundException quando usuário a seguir não existe")
+    void follow_shouldThrowNotFoundException_whenUserNotFound() {
+        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(99)).thenReturn(Optional.empty());
 
-        User buyer = new User("Buyer", false);
-        buyer.setId(buyerId);
+        assertThrows(EntityNotFoundException.class, () -> userService.follow(1, 99));
+        verifyNoInteractions(followRepository);
+    }
 
-        User seller = new User("Seller", true);
-        seller.setId(sellerId);
+    @Test
+    @DisplayName("T-0001: Deve seguir normalmente quando usuário existe e é vendedor")
+    void follow_shouldSave_whenUserExistsAndIsSeller() {
+        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(followRepository.existsByFollowerIdAndSellerId(1, 3)).thenReturn(false);
 
-        when(userRepository.findById(buyerId)).thenReturn(Optional.of(buyer));
-        when(userRepository.findById(sellerId)).thenReturn(Optional.of(seller));
-        when(followRepository.existsByFollowerIdAndSellerId(buyerId, sellerId)).thenReturn(false);
-
-        userService.follow(buyerId, sellerId);
+        userService.follow(1, 3);
 
         verify(followRepository).save(any(UserFollow.class));
     }
 
-    /**
-     * T-0002 (US-0007)
-     * Verificar se o usuário a ser deixado de seguir existe.
-     * - Se não existe: lança EntityNotFoundException
-     */
     @Test
-    void T0002_unfollow_shouldThrowNotFound_whenUserToUnfollowDoesNotExist() {
-        int buyerId = 1;
-        int sellerId = 2;
-
-        User buyer = new User("Buyer", false);
-        buyer.setId(buyerId);
-
-        when(userRepository.findById(buyerId)).thenReturn(Optional.of(buyer));
-        when(userRepository.findById(sellerId)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> userService.unfollow(buyerId, sellerId));
-
-        verifyNoInteractions(followRepository);
-        verifyNoInteractions(userMapper);
-    }
-
-    /**
-     * Extra essencial (regra de negócio): follow self -> BusinessException
-     */
-    @Test
-    void follow_shouldThrowBusinessException_whenUserFollowsSelf() {
+    @DisplayName("Deve lançar BusinessException quando usuário tenta seguir a si mesmo")
+    void follow_shouldThrowBusinessException_whenFollowingSelf() {
         assertThrows(BusinessException.class, () -> userService.follow(1, 1));
         verifyNoInteractions(userRepository);
         verifyNoInteractions(followRepository);
     }
 
-    /**
-     * Extra essencial (regra de negócio): target não é seller -> BusinessException
-     */
     @Test
+    @DisplayName("Deve lançar BusinessException quando usuário a seguir não é vendedor")
     void follow_shouldThrowBusinessException_whenTargetIsNotSeller() {
-        int buyerId = 1;
-        int targetId = 2;
+        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(2)).thenReturn(Optional.of(buyer2));
 
-        User buyer = new User("Buyer", false);
-        buyer.setId(buyerId);
-
-        User target = new User("NotSeller", false);
-        target.setId(targetId);
-
-        when(userRepository.findById(buyerId)).thenReturn(Optional.of(buyer));
-        when(userRepository.findById(targetId)).thenReturn(Optional.of(target));
-
-        assertThrows(BusinessException.class, () -> userService.follow(buyerId, targetId));
+        assertThrows(BusinessException.class, () -> userService.follow(1, 2));
         verifyNoInteractions(followRepository);
     }
 
-    /**
-     * Extra essencial (regra de negócio): follow duplicado -> ConflictException
-     */
     @Test
+    @DisplayName("Deve lançar ConflictException quando já está seguindo")
     void follow_shouldThrowConflictException_whenAlreadyFollowing() {
-        int buyerId = 1;
-        int sellerId = 2;
+        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(followRepository.existsByFollowerIdAndSellerId(1, 3)).thenReturn(true);
 
-        User buyer = new User("Buyer", false);
-        buyer.setId(buyerId);
-
-        User seller = new User("Seller", true);
-        seller.setId(sellerId);
-
-        when(userRepository.findById(buyerId)).thenReturn(Optional.of(buyer));
-        when(userRepository.findById(sellerId)).thenReturn(Optional.of(seller));
-        when(followRepository.existsByFollowerIdAndSellerId(buyerId, sellerId)).thenReturn(true);
-
-        assertThrows(ConflictException.class, () -> userService.follow(buyerId, sellerId));
+        assertThrows(ConflictException.class, () -> userService.follow(1, 3));
         verify(followRepository, never()).save(any());
     }
 
-    /**
-     * Extra essencial (regra de negócio): unfollow sem seguir -> ConflictException
-     */
+    // ==================================================================================
+    // US-0007: Deixar de seguir um vendedor (T-0002)
+    // ==================================================================================
+
     @Test
+    @DisplayName("T-0002: Deve lançar EntityNotFoundException quando usuário a deixar de seguir não existe")
+    void unfollow_shouldThrowNotFoundException_whenUserNotFound() {
+        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(99)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> userService.unfollow(1, 99));
+        verifyNoInteractions(followRepository);
+    }
+
+    @Test
+    @DisplayName("T-0002: Deve deixar de seguir normalmente quando relacionamento existe")
+    void unfollow_shouldDelete_whenFollowExists() {
+        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(followRepository.existsByFollowerIdAndSellerId(1, 3)).thenReturn(true);
+
+        userService.unfollow(1, 3);
+
+        verify(followRepository).deleteByFollowerIdAndSellerId(1, 3);
+    }
+
+    @Test
+    @DisplayName("Deve lançar ConflictException quando não está seguindo")
     void unfollow_shouldThrowConflictException_whenNotFollowing() {
-        int buyerId = 1;
-        int sellerId = 2;
+        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(followRepository.existsByFollowerIdAndSellerId(1, 3)).thenReturn(false);
 
-        User buyer = new User("Buyer", false);
-        buyer.setId(buyerId);
-
-        User seller = new User("Seller", true);
-        seller.setId(sellerId);
-
-        when(userRepository.findById(buyerId)).thenReturn(Optional.of(buyer));
-        when(userRepository.findById(sellerId)).thenReturn(Optional.of(seller));
-        when(followRepository.existsByFollowerIdAndSellerId(buyerId, sellerId)).thenReturn(false);
-
-        assertThrows(ConflictException.class, () -> userService.unfollow(buyerId, sellerId));
+        assertThrows(ConflictException.class, () -> userService.unfollow(1, 3));
         verify(followRepository, never()).deleteByFollowerIdAndSellerId(anyInt(), anyInt());
+    }
+
+    // ==================================================================================
+    // Método auxiliar
+    // ==================================================================================
+
+    private User createUser(int id, String name, boolean isSeller) {
+        User user = new User(name, isSeller);
+        user.setId(id);
+        return user;
     }
 }

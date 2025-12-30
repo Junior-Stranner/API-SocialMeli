@@ -59,7 +59,6 @@ public class UserServiceImpl implements IUserService {
         if (userId == userIdToUnfollow) {
             throw new BusinessException("User cannot unfollow themselves");
         }
-
         User buyer = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
