@@ -22,7 +22,6 @@ public class PostMapper {
         this.modelMapper = modelMapper;
     }
 
-
     public Post toEntity(PostPublishRequest request) {
         Post post = modelMapper.map(request, Post.class);
         return post;
