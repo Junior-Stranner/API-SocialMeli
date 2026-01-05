@@ -41,18 +41,11 @@ public class PostServiceImpl implements IPostService {
 
     @Override
     public void publish(PostPublishRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "User with id " + request.getUserId() + " not found"
-                ));
-
-        if (!user.isSeller()) {
-            throw new BusinessException("User " + user.getId() + " is not a seller");
-        }
+        User seller = findSellerById(request.getUserId());
 
         Post entity = postMapper.toEntity(request);
         entity.setPostId(0);
-        entity.setUser(user);
+        entity.setUser(seller);
         entity.setHasPromo(false);
         entity.setDiscount(0.0);
 
@@ -62,9 +55,7 @@ public class PostServiceImpl implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public FollowedPostsResponse getFollowedPostsLastTwoWeeks(int userId, String order) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-
+        findUserById(userId);
         LocalDate since = LocalDate.now().minusWeeks(2);
 
         List<User> followedSellers = followRepository.findFollowedSellers(userId);
@@ -72,10 +63,7 @@ public class PostServiceImpl implements IPostService {
             return new FollowedPostsResponse(userId, List.of());
         }
 
-        List<Post> posts = postRepository.findByUserInAndDateAfterOrderByDateDesc(
-                new HashSet<>(followedSellers), since
-        );
-
+        List<Post> posts = postRepository.findByUserInAndDateAfterOrderByDateDesc(new HashSet<>(followedSellers), since);
         posts = sortPost(posts, order);
 
         return new FollowedPostsResponse(userId, posts.stream().map(postMapper::toDto).toList());
@@ -83,20 +71,12 @@ public class PostServiceImpl implements IPostService {
 
     @Override
     public void publishPromo(PromoPostPublishRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "User with id " + request.getUserId() + " not found"
-                ));
-
-        if (!user.isSeller()) {
-            throw new BusinessException("User " + user.getId() + " is not a seller");
-        }
-
+        User seller = findSellerById(request.getUserId());
         validatePromoDiscount(request.getDiscount());
 
         Post entity = postMapper.toEntity(request);
         entity.setPostId(0);
-        entity.setUser(user);
+        entity.setUser(seller);
         entity.setHasPromo(true);
         entity.setDiscount(request.getDiscount());
 
@@ -105,28 +85,15 @@ public class PostServiceImpl implements IPostService {
 
     @Override
     public PromoCountResponse getPromoCount(int userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-
-        if (!user.isSeller()) {
-            throw new BusinessException("User " + user.getId() + " is not a seller");
-        }
-
+        User seller = findSellerById(userId);
         long count = postRepository.countByUserIdAndHasPromoTrue(userId);
-        return new PromoCountResponse(userId, user.getName(), Math.toIntExact(count));
+        return new PromoCountResponse(userId, seller.getName(), Math.toIntExact(count));
     }
 
     @Override
     public PromoPostsResponse getPromoPosts(int userId) {
-        User seller = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-
-        if (!seller.isSeller()) {
-            throw new BusinessException("User " + seller.getId() + " is not a seller");
-        }
-
+        User seller = findSellerById(userId);
         List<Post> promoPosts = postRepository.findPromoPostsBySellerIdFetchUser(userId);
-
         return new PromoPostsResponse(
                 userId,
                 seller.getName(),
@@ -158,6 +125,19 @@ public class PostServiceImpl implements IPostService {
                 seller.getName(),
                 promoPosts.stream().map(postMapper::toDto).toList()
         );
+    }
+
+    private User findUserById(int userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+    }
+
+    private User findSellerById(int sellerId){
+        User user = findUserById(sellerId);
+        if (!user.isSeller()) {
+            throw new BusinessException("User " + user.getId() + " is not a seller");
+        }
+        return user;
     }
 
     private void validatePromoDiscount(Double discount) {

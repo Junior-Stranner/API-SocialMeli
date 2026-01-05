@@ -15,12 +15,16 @@ import br.com.socialmedia.socialmedia.repository.UserRepository;
 import br.com.socialmedia.socialmedia.service.IUserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class UserServiceImpl implements IUserService {
+
+    private final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
     private final UserFollowRepository followRepository;
@@ -35,6 +39,7 @@ public class UserServiceImpl implements IUserService {
     @Transactional
     @Override
     public UserResponse follow(int userId, int userIdToFollow) {
+        log.info("User {} try to follow user {}", userId, userIdToFollow);
         validateNotSameUser(userId, userIdToFollow);
 
         User buyer = findUserById(userId);
@@ -43,12 +48,14 @@ public class UserServiceImpl implements IUserService {
         validateFollow(buyer, seller);
 
         followRepository.save(new UserFollow(buyer, seller));
+        log.info("User {} now follows user {}", userId, userIdToFollow);
         return userMapper.toDto(seller);
     }
 
     @Transactional
     @Override
     public UserResponse unfollow(int userId, int userIdToUnfollow) {
+        log.info("User {} attempting to unfollow user {}", userId, userIdToUnfollow);
         validateNotSameUser(userId, userIdToUnfollow);
 
         User buyer = findUserById(userId);
@@ -57,6 +64,7 @@ public class UserServiceImpl implements IUserService {
         validateUnfollow(buyer, seller);
 
         followRepository.deleteByFollowerIdAndSellerId(buyer.getId(), seller.getId());
+        log.info("User {} unfollowed user {}", userId, userIdToUnfollow);
         return userMapper.toDto(seller);
     }
 
@@ -64,6 +72,7 @@ public class UserServiceImpl implements IUserService {
     public FollowersCountDto getFollowersCount(int userId) {
         User seller = findSellerById(userId);
         int count = (int) followRepository.countBySellerId(userId);
+        log.debug("Seller {} has {} followers", userId, count);
         return new FollowersCountDto(seller.getId(), seller.getName(), count);
     }
 

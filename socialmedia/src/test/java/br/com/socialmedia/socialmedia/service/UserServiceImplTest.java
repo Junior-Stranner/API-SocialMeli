@@ -1,5 +1,6 @@
 package br.com.socialmedia.socialmedia.service;
 
+import br.com.socialmedia.socialmedia.dto.FollowDto;
 import br.com.socialmedia.socialmedia.entity.User;
 import br.com.socialmedia.socialmedia.entity.UserFollow;
 import br.com.socialmedia.socialmedia.exception.BusinessException;
@@ -17,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -144,4 +146,70 @@ class UserServiceImplTest {
         user.setId(id);
         return user;
     }
+
+    // ==================================================================================
+// US-0002: Contagem de seguidores (T-0007)
+// ==================================================================================
+
+    @Test
+    @DisplayName("T-0007: Deve retornar contagem correta de seguidores")
+    void getFollowersCount_shouldReturnCorrectCount() {
+        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(followRepository.countBySellerId(3)).thenReturn(5L);
+
+        var result = userService.getFollowersCount(3);
+
+        assertEquals(5, result.followersCount());
+    }
+
+// ==================================================================================
+// US-0008: Ordenação alfabética (T-0003, T-0004)
+// ==================================================================================
+
+    @Test
+    @DisplayName("T-0003: Deve lançar exceção quando ordenação é inválida")
+    void getFollowersList_shouldThrowException_whenInvalidOrder() {
+        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+
+        assertThrows(BusinessException.class, () -> userService.getFollowersList(3, "invalid"));
+    }
+
+    @Test
+    @DisplayName("T-0004: Deve ordenar por nome ASC corretamente")
+    void getFollowersList_shouldOrderByNameAsc() {
+        User userA = createUser(10, "Ana", false);
+        User userB = createUser(11, "Bruno", false);
+
+        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(followRepository.findFollowersOrderByNameAsc(3)).thenReturn(List.of(userA, userB));
+        when(userMapper.toFollowList(any())).thenReturn(List.of(
+                new FollowDto(10, "Ana"),
+                new FollowDto(11, "Bruno")
+        ));
+
+        var result = userService.getFollowersList(3, "name_asc");
+
+        assertEquals("Ana", result.followers().get(0).userName());
+        assertEquals("Bruno", result.followers().get(1).userName());
+    }
+
+    @Test
+    @DisplayName("T-0004: Deve ordenar por nome DESC corretamente")
+    void getFollowersList_shouldOrderByNameDesc() {
+        User userA = createUser(10, "Ana", false);
+        User userB = createUser(11, "Bruno", false);
+
+        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(followRepository.findFollowersOrderByNameDesc(3)).thenReturn(List.of(userB, userA));
+        when(userMapper.toFollowList(any())).thenReturn(List.of(
+                new FollowDto(11, "Bruno"),
+                new FollowDto(10, "Ana")
+        ));
+
+        var result = userService.getFollowersList(3, "name_desc");
+
+        assertEquals("Bruno", result.followers().get(0).userName());
+        assertEquals("Ana", result.followers().get(1).userName());
+    }
+
 }
