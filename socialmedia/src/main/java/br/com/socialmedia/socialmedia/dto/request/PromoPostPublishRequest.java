@@ -31,10 +31,6 @@ public class PromoPostPublishRequest {
         @NotNull(message = "has_promo must not be null")
         private Boolean hasPromo;
 
-        /**
-         * Opção 1 (fração 0..1): mantém sua validação atual
-         * Ex.: 0.20 = 20% de desconto
-         */
         @NotNull(message = "discount must not be null")
         @DecimalMin(value = "0.0", inclusive = false, message = "discount must be > 0")
         @DecimalMax(value = "1.0", inclusive = false, message = "discount must be < 1")

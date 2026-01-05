@@ -23,11 +23,11 @@ public class UserMapper {
     }
 
     public UserResponse toDto(User user) {
-        return new UserResponse(user.getId(), user.getName(), user.isSeller());
+        return new UserResponse(user.getUserId(), user.getName(), user.isSeller());
     }
 
     public FollowDto toFollow(User user) {
-        return new FollowDto(user.getId(), user.getName());
+        return new FollowDto(user.getUserId(), user.getName());
     }
 
     public List<FollowDto> toFollowList(List<User> users) {

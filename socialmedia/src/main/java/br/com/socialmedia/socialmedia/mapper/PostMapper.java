@@ -39,7 +39,7 @@ public class PostMapper {
 
     public PostResponse toDto(Post post) {
         PostResponse response = modelMapper.map(post, PostResponse.class);
-        response.setUserId(post.getUser().getId());
+        response.setUserId(post.getUser().getUserId());
         response.setPostId(post.getPostId());
 
         response.setSeller(toSellerSummary(post.getUser()));
@@ -50,7 +50,7 @@ public class PostMapper {
         if (seller == null) {
             return null;
         }
-        return new SellerDto(seller.getId(), seller.getName());
+        return new SellerDto(seller.getUserId(), seller.getName());
     }
 
     public List<PostResponse> toResponseList(List<Post> posts) {

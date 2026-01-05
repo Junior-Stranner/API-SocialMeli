@@ -64,21 +64,21 @@ public class SocialMeliIntegrationTest {
     @Test
     @DisplayName("US-0001: Deve retornar 200 ao seguir um vendedor")
     void follow_shouldReturn200_whenValid() throws Exception {
-        mockMvc.perform(post("/api/v1/users/{userId}/follow/{sellerId}", buyer.getId(), seller.getId()))
+        mockMvc.perform(post("/api/v1/users/{userId}/follow/{sellerId}", buyer.getUserId(), seller.getUserId()))
                 .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("US-0001: Deve retornar 404 quando vendedor não existe")
     void follow_shouldReturn404_whenSellerNotFound() throws Exception {
-        mockMvc.perform(post("/api/v1/users/{userId}/follow/{sellerId}", buyer.getId(), 999))
+        mockMvc.perform(post("/api/v1/users/{userId}/follow/{sellerId}", buyer.getUserId(), 999))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @DisplayName("US-0001: Deve retornar 400 quando tenta seguir a si mesmo")
     void follow_shouldReturn400_whenFollowingSelf() throws Exception {
-        mockMvc.perform(post("/api/v1/users/{userId}/follow/{sellerId}", buyer.getId(), buyer.getId()))
+        mockMvc.perform(post("/api/v1/users/{userId}/follow/{sellerId}", buyer.getUserId(), buyer.getUserId()))
                 .andExpect(status().isBadRequest());
     }
 
@@ -91,7 +91,7 @@ public class SocialMeliIntegrationTest {
     void getFollowersCount_shouldReturn200() throws Exception {
         followRepository.save(new UserFollow(buyer, seller));
 
-        mockMvc.perform(get("/api/v1/users/{sellerId}/followers/count", seller.getId()))
+        mockMvc.perform(get("/api/v1/users/{sellerId}/followers/count", seller.getUserId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.followers_count").value(1));
     }
@@ -105,9 +105,9 @@ public class SocialMeliIntegrationTest {
     void getFollowersList_shouldReturn200() throws Exception {
         followRepository.save(new UserFollow(buyer, seller));
 
-        mockMvc.perform(get("/api/v1/users/{sellerId}/followers/list", seller.getId()))
+        mockMvc.perform(get("/api/v1/users/{sellerId}/followers/list", seller.getUserId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.user_id").value(seller.getId()))
+                .andExpect(jsonPath("$.user_id").value(seller.getUserId()))
                 .andExpect(jsonPath("$.followers").isArray())
                 .andExpect(jsonPath("$.followers[0].user_name").value("Buyer"));
     }
@@ -121,9 +121,9 @@ public class SocialMeliIntegrationTest {
     void getFollowedList_shouldReturn200() throws Exception {
         followRepository.save(new UserFollow(buyer, seller));
 
-        mockMvc.perform(get("/api/v1/users/{userId}/followed/list", buyer.getId()))
+        mockMvc.perform(get("/api/v1/users/{userId}/followed/list", buyer.getUserId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.user_id").value(buyer.getId()))
+                .andExpect(jsonPath("$.user_id").value(buyer.getUserId()))
                 .andExpect(jsonPath("$.followed").isArray())
                 .andExpect(jsonPath("$.followed[0].user_name").value("Seller"));
     }
@@ -150,7 +150,7 @@ public class SocialMeliIntegrationTest {
                 "category": 58,
                 "price": 299.90
             }
-            """.formatted(seller.getId(), LocalDate.now());
+            """.formatted(seller.getUserId(), LocalDate.now());
 
         mockMvc.perform(post("/api/v1/products/post")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -176,7 +176,7 @@ public class SocialMeliIntegrationTest {
                 "category": 58,
                 "price": 299.90
             }
-            """.formatted(buyer.getId(), LocalDate.now());
+            """.formatted(buyer.getUserId(), LocalDate.now());
 
         mockMvc.perform(post("/api/v1/products/post")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -194,9 +194,9 @@ public class SocialMeliIntegrationTest {
         followRepository.save(new UserFollow(buyer, seller));
         createPost(seller, LocalDate.now().minusDays(5), false);
 
-        mockMvc.perform(get("/api/v1/posts/products/followed/{followedId}/list?order=date_asc", buyer.getId()))
+        mockMvc.perform(get("/api/v1/posts/products/followed/{followedId}/list?order=date_asc", buyer.getUserId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value(buyer.getId()))
+                .andExpect(jsonPath("$.userId").value(buyer.getUserId()))
                 .andExpect(jsonPath("$.posts").isArray());
     }
 
@@ -209,14 +209,14 @@ public class SocialMeliIntegrationTest {
     void unfollow_shouldReturn200_whenValid() throws Exception {
         followRepository.save(new UserFollow(buyer, seller));
 
-        mockMvc.perform(post("/api/v1/users/{userId}/unfollow/{sellerId}", buyer.getId(), seller.getId()))
+        mockMvc.perform(post("/api/v1/users/{userId}/unfollow/{sellerId}", buyer.getUserId(), seller.getUserId()))
                 .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("US-0007: Deve retornar 409 quando não está seguindo")
     void unfollow_shouldReturn409_whenNotFollowing() throws Exception {
-        mockMvc.perform(post("/api/v1/users/{userId}/unfollow/{sellerId}", buyer.getId(), seller.getId()))
+        mockMvc.perform(post("/api/v1/users/{userId}/unfollow/{sellerId}", buyer.getUserId(), seller.getUserId()))
                 .andExpect(status().isConflict());
     }
 
@@ -231,7 +231,7 @@ public class SocialMeliIntegrationTest {
         followRepository.save(new UserFollow(buyer, seller));
         followRepository.save(new UserFollow(buyer2, seller));
 
-        mockMvc.perform(get("/api/v1/users/{sellerId}/followers/list", seller.getId())
+        mockMvc.perform(get("/api/v1/users/{sellerId}/followers/list", seller.getUserId())
                         .param("order", "name_asc"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.followers[0].user_name").value("Ana"))
@@ -245,7 +245,7 @@ public class SocialMeliIntegrationTest {
         followRepository.save(new UserFollow(buyer, seller));
         followRepository.save(new UserFollow(buyer2, seller));
 
-        mockMvc.perform(get("/api/v1/users/{sellerId}/followers/list", seller.getId())
+        mockMvc.perform(get("/api/v1/users/{sellerId}/followers/list", seller.getUserId())
                         .param("order", "name_desc"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.followers[0].user_name").value("Buyer"))
@@ -276,7 +276,7 @@ public class SocialMeliIntegrationTest {
                    "has_promo": true,
                    "discount": 0.25
                  }
-            """.formatted(seller.getId(), LocalDate.now());
+            """.formatted(seller.getUserId(), LocalDate.now());
 
         mockMvc.perform(post("/api/v1/posts/products/promo-pub")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -296,7 +296,7 @@ public class SocialMeliIntegrationTest {
         createPost(seller, LocalDate.now(), false);
 
         mockMvc.perform(get("/api/v1/post/products/promo-post/count")
-                        .param("user_id", String.valueOf(seller.getId())))
+                        .param("user_id", String.valueOf(seller.getUserId())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.promo_products_count").value(2));
     }

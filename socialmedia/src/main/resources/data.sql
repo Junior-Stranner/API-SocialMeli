@@ -1,13 +1,11 @@
--- Inserir usuários (buyers e sellers)
-INSERT INTO tb_user (id, user_name, is_seller) VALUES
-                                                   (1, 'Junior', false),
-                                                   (2, 'Maria', false),
-                                                   (3, 'Pedro', false),
-                                                   (4, 'Jose Vendedor', true),
-                                                   (5, 'Tech Store', true),
-                                                   (6, 'Loja Games', true);
+INSERT INTO tb_user (user_id, user_name, is_seller) VALUES
+                                                        (1, 'Junior', false),
+                                                        (2, 'Maria', false),
+                                                        (3, 'Pedro', false),
+                                                        (4, 'Jose Vendedor', true),
+                                                        (5, 'Tech Store', true),
+                                                        (6, 'Loja Games', true);
 
--- Inserir relacionamentos de follow (buyers seguem sellers)
 INSERT INTO tb_user_follow (id, follower_id, seller_id, followed_at) VALUES
                                                                          (1, 1, 4, '2025-12-01 10:00:00'),
                                                                          (2, 1, 5, '2025-12-02 11:00:00'),
@@ -17,7 +15,6 @@ INSERT INTO tb_user_follow (id, follower_id, seller_id, followed_at) VALUES
                                                                          (6, 3, 5, '2025-12-06 15:00:00'),
                                                                          (7, 3, 6, '2025-12-07 16:00:00');
 
--- Inserir posts dos sellers
 INSERT INTO tb_post (post_id, user_id, date, product_id, product_name, type, brand, color, notes, category, price, has_promo, discount) VALUES
                                                                                                                                             (1, 4, '2025-12-20', 101, 'Mouse Gamer RGB', 'Periferico', 'Logitech', 'Preto', 'Alta precisao', 58, 299.90, true, 15.0),
                                                                                                                                             (2, 4, '2025-12-22', 102, 'Teclado Mecanico', 'Periferico', 'Razer', 'Preto', 'Switch Blue', 58, 599.90, false, 0),

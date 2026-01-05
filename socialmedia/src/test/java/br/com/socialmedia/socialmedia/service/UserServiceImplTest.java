@@ -143,7 +143,7 @@ class UserServiceImplTest {
 
     private User createUser(int id, String name, boolean isSeller) {
         User user = new User(name, isSeller);
-        user.setId(id);
+        user.setUserId(id);
         return user;
     }
 
