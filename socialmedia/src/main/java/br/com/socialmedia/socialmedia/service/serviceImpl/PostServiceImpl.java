@@ -104,16 +104,8 @@ public class PostServiceImpl implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public PromoPostsResponse getPromoPostsForFollower(int buyerId, int sellerId) {
-
-        userRepository.findById(buyerId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + buyerId + " not found"));
-
-        User seller = userRepository.findById(sellerId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + sellerId + " not found"));
-
-        if (!seller.isSeller()) {
-            throw new BusinessException("User " + seller.getId() + " is not a seller");
-        }
+        findBuyerById(buyerId);
+        User seller = findSellerById(sellerId);
 
         if (!followRepository.existsByFollowerIdAndSellerId(buyerId, sellerId)) {
             throw new BusinessException("Buyer does not follow this seller");
@@ -135,7 +127,15 @@ public class PostServiceImpl implements IPostService {
     private User findSellerById(int sellerId){
         User user = findUserById(sellerId);
         if (!user.isSeller()) {
-            throw new BusinessException("User " + user.getId() + " is not a seller");
+            throw new BusinessException("User " + user.getUserId() + " is not a seller");
+        }
+        return user;
+    }
+
+    private User findBuyerById(int buyerId){
+        User user = findUserById(buyerId);
+        if (user.isSeller()) {
+            throw new BusinessException("User " + user.getUserId() + " is a seller, not a buyer");
         }
         return user;
     }

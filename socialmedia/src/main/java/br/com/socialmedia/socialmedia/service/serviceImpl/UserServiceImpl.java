@@ -63,7 +63,7 @@ public class UserServiceImpl implements IUserService {
 
         validateUnfollow(buyer, seller);
 
-        followRepository.deleteByFollowerIdAndSellerId(buyer.getId(), seller.getId());
+        followRepository.deleteByFollowerIdAndSellerId(buyer.getUserId(), seller.getUserId());
         log.info("User {} unfollowed user {}", userId, userIdToUnfollow);
         return userMapper.toDto(seller);
     }
@@ -73,7 +73,7 @@ public class UserServiceImpl implements IUserService {
         User seller = findSellerById(userId);
         int count = (int) followRepository.countBySellerId(userId);
         log.debug("Seller {} has {} followers", userId, count);
-        return new FollowersCountDto(seller.getId(), seller.getName(), count);
+        return new FollowersCountDto(seller.getUserId(), seller.getName(), count);
     }
 
     @Override
@@ -137,23 +137,21 @@ public class UserServiceImpl implements IUserService {
 
     private void validateFollow(User buyer, User seller) {
         validateUserRoles(buyer, seller);
-
-        if (followRepository.existsByFollowerIdAndSellerId(buyer.getId(), seller.getId())) {
-            throw new ConflictException("User " + buyer.getId() + " is already following user " + seller.getId());
+        if (followRepository.existsByFollowerIdAndSellerId(buyer.getUserId(), seller.getUserId())) {
+            throw new ConflictException("User " + buyer.getUserId() + " is already following user " + seller.getUserId());
         }
     }
 
     private void validateUnfollow(User buyer, User seller) {
         validateUserRoles(buyer, seller);
-
-        if (!followRepository.existsByFollowerIdAndSellerId(buyer.getId(), seller.getId())) {
-            throw new ConflictException("User " + buyer.getId() + " is not following user " + seller.getId());
+        if (!followRepository.existsByFollowerIdAndSellerId(buyer.getUserId(), seller.getUserId())) {
+            throw new ConflictException("User " + buyer.getUserId() + " is not following user " + seller.getUserId());
         }
     }
 
     private void validateUserRoles(User buyer, User seller) {
         if (!seller.isSeller()) {
-            throw new BusinessException("User " + seller.getId() + " is not a seller");
+            throw new BusinessException("User " + seller.getUserId() + " is not a seller");
         }
         if (buyer.isSeller()) {
             throw new BusinessException("Seller cannot follow another seller");

@@ -4,13 +4,16 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "tb_user")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name ="user_id")
+    private int userId;
 
     @Column(name = "user_name", nullable = false, length = 80, unique = true)
     @Size(max = 80)
@@ -28,12 +31,12 @@ public class User {
         this.seller = seller;
     }
 
-    public int getId() {
-        return id;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getName() {
@@ -54,14 +57,13 @@ public class User {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return id == user.id;
+        return userId == user.userId;
     }
 
     @Override
     public int hashCode() {
-        return Integer.hashCode(id);
+        return Objects.hashCode(userId);
     }
 }

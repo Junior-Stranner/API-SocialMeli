@@ -51,51 +51,11 @@ public class PromoPostPublishRequest {
                 this.userId = userId;
         }
 
-        public LocalDate getDate() {
-                return date;
-        }
-
-        public void setDate(LocalDate date) {
-                this.date = date;
-        }
-
         public ProductRequest getProduct() {
                 return product;
         }
 
-        public void setProduct(ProductRequest product) {
-                this.product = product;
-        }
-
-        public int getCategory() {
-                return category;
-        }
-
-        public void setCategory(int category) {
-                this.category = category;
-        }
-
-        public Double getPrice() {
-                return price;
-        }
-
-        public void setPrice(Double price) {
-                this.price = price;
-        }
-
-        public Boolean getHasPromo() {
-                return hasPromo;
-        }
-
-        public void setHasPromo(Boolean hasPromo) {
-                this.hasPromo = hasPromo;
-        }
-
         public Double getDiscount() {
                 return discount;
-        }
-
-        public void setDiscount(Double discount) {
-                this.discount = discount;
         }
 }
