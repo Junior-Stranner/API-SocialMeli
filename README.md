@@ -3,6 +3,11 @@ API REST desenvolvida durante o Bootcamp do Mercado Livre (MeLi).
 
 O SocialMeli aproxima compradores e vendedores: compradores podem seguir vendedores, acompanhar publicações (incluindo promoções) e consultar listas/contagens com ordenação.
 
+🛒 API SocialMeli
+API REST desenvolvida durante o Bootcamp do Mercado Livre (MeLi).
+
+O SocialMeli aproxima compradores e vendedores: compradores podem seguir vendedores, acompanhar publicações (incluindo promoções) e consultar listas/contagens com ordenação.
+
 📌 Índice
 📋 Descrição
 🎯 Requisitos (User Stories)
@@ -16,6 +21,8 @@ O SocialMeli aproxima compradores e vendedores: compradores podem seguir vendedo
 ⚠️ Tratamento de Erros
 ✅ Checklist de Entrega
 👤 Autor
+
+
 📋 Descrição
 O SocialMeli permite:
 
@@ -26,6 +33,9 @@ Funcionalidade	Descrição
 📝 Publicações	Criar e consultar publicações
 📰 Feed	Consultar feed das últimas 2 semanas
 🔥 Promoções	Criar e consultar publicações promocionais
+
+
+
 🎯 Requisitos (User Stories)
 👥 Seguidores
 US	Descrição	Endpoint
