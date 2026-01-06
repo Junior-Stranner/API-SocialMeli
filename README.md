@@ -1,67 +1,81 @@
-🛒 API SocialMeli
-API REST desenvolvida durante o Bootcamp do Mercado Livre (MeLi).
+# 🛒 API SocialMeli
 
-O SocialMeli aproxima compradores e vendedores: compradores podem seguir vendedores, acompanhar publicações (incluindo promoções) e consultar listas/contagens com ordenação.
+API REST desenvolvida durante o **Bootcamp do Mercado Livre (MeLi)**.
 
-🛒 API SocialMeli
-API REST desenvolvida durante o Bootcamp do Mercado Livre (MeLi).
+O **SocialMeli** aproxima compradores e vendedores: compradores podem seguir vendedores, acompanhar publicações (incluindo promoções) e consultar listas/contagens com ordenação.
 
-O SocialMeli aproxima compradores e vendedores: compradores podem seguir vendedores, acompanhar publicações (incluindo promoções) e consultar listas/contagens com ordenação.
+---
 
-📌 Índice
-📋 Descrição
-🎯 Requisitos (User Stories)
-🧱 Arquitetura
-🛠️ Tecnologias
-📦 Modelos
-📚 Documentação (Swagger)
-🐳 Banco MySQL com Docker
-▶️ Como Executar
-🧪 Testes
-⚠️ Tratamento de Erros
-✅ Checklist de Entrega
-👤 Autor
+## 📌 Índice
 
+- [📋 Descrição](#-descrição)
+- [🎯 Requisitos (User Stories)](#-requisitos-user-stories)
+- [🧱 Arquitetura](#-arquitetura)
+- [🛠️ Tecnologias](#️-tecnologias)
+- [📦 Modelos](#-modelos)
+- [📚 Documentação (Swagger)](#-documentação-swagger)
+- [🐳 Banco MySQL com Docker](#-banco-mysql-com-docker)
+- [▶️ Como Executar](#️-como-executar)
+- [🧪 Testes](#-testes)
+- [⚠️ Tratamento de Erros](#️-tratamento-de-erros)
+- [✅ Checklist de Entrega](#-checklist-de-entrega)
+- [👤 Autor](#-autor)
 
-📋 Descrição
-O SocialMeli permite:
+---
 
-Funcionalidade	Descrição
-👥 Follow/Unfollow	Seguir e deixar de seguir vendedores
-📊 Contagens	Consultar contagem de seguidores/seguidos
-📋 Listagens	Listar seguidores e vendedores seguidos
-📝 Publicações	Criar e consultar publicações
-📰 Feed	Consultar feed das últimas 2 semanas
-🔥 Promoções	Criar e consultar publicações promocionais
+## 📋 Descrição
 
+O **SocialMeli** permite:
 
+| Funcionalidade | Descrição |
+|----------------|-----------|
+| 👥 Follow/Unfollow | Seguir e deixar de seguir vendedores |
+| 📊 Contagens | Consultar contagem de seguidores/seguidos |
+| 📋 Listagens | Listar seguidores e vendedores seguidos |
+| 📝 Publicações | Criar e consultar publicações |
+| 📰 Feed | Consultar feed das últimas 2 semanas |
+| 🔥 Promoções | Criar e consultar publicações promocionais |
 
-🎯 Requisitos (User Stories)
-👥 Seguidores
-US	Descrição	Endpoint
-US-0001	Seguir um vendedor	POST /users/{userId}/follow/{sellerId}
-US-0007	Deixar de seguir	POST /users/{userId}/unfollow/{sellerId}
-US-0002	Contar seguidores	GET /users/{sellerId}/followers/count
-US-0003	Listar seguidores	GET /users/{sellerId}/followers/list
-US-0004	Listar seguidos	GET /users/{userId}/followed/list
+---
 
-📝 Publicações
-US	Descrição	Endpoint
-US-0005	Registrar publicação	POST /products/post
-US-0006	Feed últimas 2 semanas	GET /products/followed/{userId}/list
+## 🎯 Requisitos (User Stories)
 
-🔥 Promoções
-US	Descrição	Endpoint
-US-0010	Publicar produto em promoção	POST /products/promo-post
-US-0011	Contar produtos em promoção	GET /products/promo-post/count?user_id={userId}
+### 👥 Seguidores
 
-🔎 Ordenação
-Tipo	Parâmetros
-Alfabética	name_asc, name_desc
-Data	date_asc, date_desc
+| US | Descrição | Endpoint |
+|----|-----------|----------|
+| US-0001 | Seguir um vendedor | `POST /users/{userId}/follow/{sellerId}` |
+| US-0007 | Deixar de seguir | `POST /users/{userId}/unfollow/{sellerId}` |
+| US-0002 | Contar seguidores | `GET /users/{sellerId}/followers/count` |
+| US-0003 | Listar seguidores | `GET /users/{sellerId}/followers/list` |
+| US-0004 | Listar seguidos | `GET /users/{userId}/followed/list` |
 
-🧱 Arquitetura
-Projeto baseado em Spring MVC com camadas:
+### 📝 Publicações
+
+| US | Descrição | Endpoint |
+|----|-----------|----------|
+| US-0005 | Registrar publicação | `POST /products/post` |
+| US-0006 | Feed últimas 2 semanas | `GET /products/followed/{userId}/list` |
+
+### 🔥 Promoções
+
+| US | Descrição | Endpoint |
+|----|-----------|----------|
+| US-0010 | Publicar produto em promoção | `POST /products/promo-post` |
+| US-0011 | Contar produtos em promoção | `GET /products/promo-post/count?user_id={userId}` |
+
+### 🔎 Ordenação
+
+| Tipo | Parâmetros |
+|------|------------|
+| Alfabética | `name_asc`, `name_desc` |
+| Data | `date_asc`, `date_desc` |
+
+---
+
+## 🧱 Arquitetura
+
+Projeto baseado em **Spring MVC** com camadas:
 
 ┌─────────────────────────────────────────────────────────┐
 │                      Controller                         │
@@ -77,9 +91,8 @@ Projeto baseado em Spring MVC com camadas:
 │                    (H2 / MySQL)                         │
 └─────────────────────────────────────────────────────────┘
 
-📁 Estrutura de Pacotes
-bash
-Copiar código
+### 📁 Estrutura de Pacotesbash
+
 src/main/java/br/com/socialmedia/socialmedia/
 ├── controller/          # Endpoints REST
 ├── service/             # Interfaces de serviço
@@ -93,66 +106,88 @@ src/main/java/br/com/socialmedia/socialmedia/
 └── exception/           # Exceções e Handler
 
 
-🛠️ Tecnologias
-Tecnologia	Versão	Descrição
-Java	21	Linguagem
-Spring Boot	3.4.x	Framework
-Spring Web	-	REST APIs
-Spring Data JPA	-	Persistência
-Bean Validation	-	Validações
-Maven	-	Build
-H2	-	Banco em memória (dev)
-MySQL	8.0	Banco de dados (prod)
-Docker	-	Containerização
-Swagger/OpenAPI	-	Documentação
+---
 
-JUnit 5	-	Testes unitários
-Mockito	-	Mocks para testes
+## 🛠️ Tecnologias
 
-📦 Modelos
-User
-Campo	Tipo	Descrição
-userId	int	PK - Identificador
-name	String	Nome do usuário
-seller	boolean	É vendedor?
+| Tecnologia | Versão | Descrição |
+|------------|--------|-----------|
+| Java | 21 | Linguagem |
+| Spring Boot | 3.4.x | Framework |
+| Spring Web | - | REST APIs |
+| Spring Data JPA | - | Persistência |
+| Bean Validation | - | Validações |
+| Maven | - | Build |
+| H2 | - | Banco em memória (dev) |
+| MySQL | 8.0 | Banco de dados (prod) |
+| Docker | - | Containerização |
+| Swagger/OpenAPI | - | Documentação |
+| JUnit 5 | - | Testes unitários |
+| Mockito | - | Mocks para testes |
 
-Post
-Campo	Tipo	Descrição
-postId	int	PK - Identificador
-user	User	Vendedor dono do post
-date	LocalDate	Data da publicação
-category	int	Categoria
-price	double	Preço
-hasPromo	boolean	É promoção?
-discount	double	Desconto (%)
-product	Product	Produto (embedded)
+---
 
-Product (Embedded)
-Campo	Tipo	Descrição
-productId	int	ID do produto
-productName	String	Nome
-type	String	Tipo
-brand	String	Marca
-color	String	Cor
-notes	String	Observações
+## 📦 Modelos
 
-UserFollow
-Campo	Tipo	Descrição
-id	int	PK - Identificador
-follower	User	Quem segue (buyer)
-seller	User	Quem é seguido (seller)
-followedAt	LocalDateTime	Data do follow
+### User
 
-📚 Documentação (Swagger)
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `userId` | int | PK - Identificador |
+| `name` | String | Nome do usuário |
+| `seller` | boolean | É vendedor? |
+
+### Post
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `postId` | int | PK - Identificador |
+| `user` | User | Vendedor dono do post |
+| `date` | LocalDate | Data da publicação |
+| `category` | int | Categoria |
+| `price` | double | Preço |
+| `hasPromo` | boolean | É promoção? |
+| `discount` | double | Desconto (%) |
+| `product` | Product | Produto (embedded) |
+
+### Product (Embedded)
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `productId` | int | ID do produto |
+| `productName` | String | Nome |
+| `type` | String | Tipo |
+| `brand` | String | Marca |
+| `color` | String | Cor |
+| `notes` | String | Observações |
+
+### UserFollow
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | int | PK - Identificador |
+| `follower` | User | Quem segue (buyer) |
+| `seller` | User | Quem é seguido (seller) |
+| `followedAt` | LocalDateTime | Data do follow |
+
+---
+
+## 📚 Documentação (Swagger)
+
 Após subir a aplicação, acesse:
 
-Recurso	URL
-Swagger UI	http://localhost:8080/swagger-ui/index.html
-OpenAPI JSON	http://localhost:8080/v3/api-docs
+| Recurso | URL |
+|---------|-----|
+| Swagger UI | `http://localhost:8080/swagger-ui/index.html` |
+| OpenAPI JSON | `http://localhost:8080/v3/api-docs` |
 
-🐳 Banco MySQL com Docker
-docker-compose.yml
+---
 
+## 🐳 Banco MySQL com Docker
+
+### `docker-compose.yml`
+
+```yaml
 services:
   mysql:
     image: mysql:8.0
@@ -170,7 +205,6 @@ services:
 
 volumes:
   mysql_data:
-Comandos
 
 # Subir MySQL
 docker-compose up -d
@@ -180,6 +214,8 @@ docker ps
 
 # Parar
 docker-compose down
+
+
 ▶️ Como Executar
 
 Pré-requisitos
