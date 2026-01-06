@@ -1,128 +1,148 @@
-# API SocialMeli
+🛒 API SocialMeli
+API REST desenvolvida durante o Bootcamp do Mercado Livre (MeLi).
 
-API REST desenvolvida durante o Bootcamp do Mercado Livre (MeLi).  
-A proposta do **SocialMeli** é aproximar compradores e vendedores: compradores podem seguir vendedores, acompanhar publicações (incluindo promoções) e consultar listas/contagens com ordenação.
+O SocialMeli aproxima compradores e vendedores: compradores podem seguir vendedores, acompanhar publicações (incluindo promoções) e consultar listas/contagens com ordenação.
 
----
+📌 Índice
+📋 Descrição
+🎯 Requisitos (User Stories)
+🧱 Arquitetura
+🛠️ Tecnologias
+📦 Modelos
+📚 Documentação (Swagger)
+🐳 Banco MySQL com Docker
+▶️ Como Executar
+🧪 Testes
+⚠️ Tratamento de Erros
+✅ Checklist de Entrega
+👤 Autor
+📋 Descrição
+O SocialMeli permite:
 
-## 📌 Índice
+Funcionalidade	Descrição
+👥 Follow/Unfollow	Seguir e deixar de seguir vendedores
+📊 Contagens	Consultar contagem de seguidores/seguidos
+📋 Listagens	Listar seguidores e vendedores seguidos
+📝 Publicações	Criar e consultar publicações
+📰 Feed	Consultar feed das últimas 2 semanas
+🔥 Promoções	Criar e consultar publicações promocionais
+🎯 Requisitos (User Stories)
+👥 Seguidores
+US	Descrição	Endpoint
+US-0001	Seguir um vendedor	POST /users/{userId}/follow/{sellerId}
+US-0007	Deixar de seguir	POST /users/{userId}/unfollow/{sellerId}
+US-0002	Contar seguidores	GET /users/{sellerId}/followers/count
+US-0003	Listar seguidores	GET /users/{sellerId}/followers/list
+US-0004	Listar seguidos	GET /users/{userId}/followed/list
 
-- [📋 Descrição](#-descrição)
-- [🎯 Requisitos (User Stories)](#-requisitos-user-stories)
-- [🧱 Arquitetura](#-arquitetura)
-- [🛠️ Tecnologias](#️-tecnologias)
-- [📦 Modelos (resumo)](#-modelos-resumo)
-- [📚 Documentação (Swagger)](#-documentação-swagger)
-- [🐳 Banco MySQL com Docker](#-banco-mysql-com-docker)
-- [▶️ Como executar localmente](#️-como-executar-localmente)
-- [🧪 Testes Unitários (Service)](#-testes-unitários-service)
-- [⚠️ Tratamento de erros](#️-tratamento-de-erros)
-- [✅ Checklist de entrega](#-checklist-de-entrega)
-- [👤 Autor](#-autor)
+📝 Publicações
+US	Descrição	Endpoint
+US-0005	Registrar publicação	POST /products/post
+US-0006	Feed últimas 2 semanas	GET /products/followed/{userId}/list
 
----
+🔥 Promoções
+US	Descrição	Endpoint
+US-0010	Publicar produto em promoção	POST /products/promo-post
+US-0011	Contar produtos em promoção	GET /products/promo-post/count?user_id={userId}
 
-## 📋 Descrição
+🔎 Ordenação
+Tipo	Parâmetros
+Alfabética	name_asc, name_desc
+Data	date_asc, date_desc
 
-O **SocialMeli** permite:
+🧱 Arquitetura
+Projeto baseado em Spring MVC com camadas:
 
-- Seguir e deixar de seguir vendedores (follow/unfollow)
-- Consultar contagem e lista de seguidores/seguidos
-- Criar publicações (post)
-- Consultar feed das últimas 2 semanas (somente vendedores seguidos)
-- Criar publicações promocionais e consultar promoções
+┌─────────────────────────────────────────────────────────┐
+│                      Controller                         │
+│              (Endpoints REST - entrada HTTP)            │
+├─────────────────────────────────────────────────────────┤
+│                       Service                           │
+│                  (Regras de negócio)                    │
+├─────────────────────────────────────────────────────────┤
+│                      Repository                         │
+│              (Persistência - Spring Data JPA)           │
+├─────────────────────────────────────────────────────────┤
+│                       Database                          │
+│                    (H2 / MySQL)                         │
+└─────────────────────────────────────────────────────────┘
 
----
+📁 Estrutura de Pacotes
+bash
+Copiar código
+src/main/java/br/com/socialmedia/socialmedia/
+├── controller/          # Endpoints REST
+├── service/             # Interfaces de serviço
+│   └── serviceImpl/     # Implementações
+├── repository/          # Repositórios JPA
+├── entity/              # Entidades JPA
+├── dto/                 # DTOs (Request/Response)
+│   ├── request/
+│   └── response/
+├── mapper/              # Conversão Entity <-> DTO
+└── exception/           # Exceções e Handler
 
-## 🎯 Requisitos (User Stories)
 
-### 👥 Seguidores
-- **US-0001**: Seguir um vendedor
-- **US-0007**: Deixar de seguir um vendedor
-- **US-0002**: Contar seguidores de um vendedor
-- **US-0003**: Listar seguidores (Quem me segue?)
-- **US-0004**: Listar seguidos (Quem estou seguindo?)
+🛠️ Tecnologias
+Tecnologia	Versão	Descrição
+Java	21	Linguagem
+Spring Boot	3.4.x	Framework
+Spring Web	-	REST APIs
+Spring Data JPA	-	Persistência
+Bean Validation	-	Validações
+Maven	-	Build
+H2	-	Banco em memória (dev)
+MySQL	8.0	Banco de dados (prod)
+Docker	-	Containerização
+Swagger/OpenAPI	-	Documentação
 
-### 📝 Publicações
-- **US-0005**: Registrar nova publicação
-- **US-0006**: Listar publicações das últimas 2 semanas dos vendedores seguidos (ordenado por data)
+JUnit 5	-	Testes unitários
+Mockito	-	Mocks para testes
 
-### 🔥 Promoções
-- Publicar produto em promoção
-- Obter quantidade de produtos em promoção de um vendedor
-- (Extra) Listar promoções de um vendedor (ou restrito a seguidores, se implementado)
+📦 Modelos
+User
+Campo	Tipo	Descrição
+userId	int	PK - Identificador
+name	String	Nome do usuário
+seller	boolean	É vendedor?
 
-### 🔎 Ordenação
-- **Alfabética**: `name_asc` | `name_desc`
-- **Data**: `date_asc` | `date_desc`
+Post
+Campo	Tipo	Descrição
+postId	int	PK - Identificador
+user	User	Vendedor dono do post
+date	LocalDate	Data da publicação
+category	int	Categoria
+price	double	Preço
+hasPromo	boolean	É promoção?
+discount	double	Desconto (%)
+product	Product	Produto (embedded)
 
----
+Product (Embedded)
+Campo	Tipo	Descrição
+productId	int	ID do produto
+productName	String	Nome
+type	String	Tipo
+brand	String	Marca
+color	String	Cor
+notes	String	Observações
 
-## 🧱 Arquitetura
+UserFollow
+Campo	Tipo	Descrição
+id	int	PK - Identificador
+follower	User	Quem segue (buyer)
+seller	User	Quem é seguido (seller)
+followedAt	LocalDateTime	Data do follow
 
-Projeto baseado em **Spring MVC** com camadas:
+📚 Documentação (Swagger)
+Após subir a aplicação, acesse:
 
-- **Controller**: entrada HTTP (endpoints REST)
-- **Service**: regras de negócio
-- **Repository**: persistência (Spring Data JPA)
-- **DTOs**: contratos de entrada/saída (Request/Response)
-- **Exception Handler**: padronização de erros
+Recurso	URL
+Swagger UI	http://localhost:8080/swagger-ui/index.html
+OpenAPI JSON	http://localhost:8080/v3/api-docs
 
----
+🐳 Banco MySQL com Docker
+docker-compose.yml
 
-## 🛠️ Tecnologias
-
-- Java 21
-- Spring Boot
-- Spring Web (Spring MVC)
-- Spring Data JPA
-- Bean Validation
-- Maven
-- MySQL (via Docker)
-- H2 (opcional para desenvolvimento/testes)
-- Swagger/OpenAPI (springdoc)
-
----
-
-## 📦 Modelos (resumo)
-
-### User
-- `id` (PK)
-- `name`
-- `seller` (boolean)
-
-### Post
-- `postId` (PK)
-- `user` (seller dono do post)
-- `date`
-- `category`
-- `price`
-- `hasPromo`
-- `discount`
-- `product` (embedded)
-
----
-
-## 📚 Documentação (Swagger)
-
-Após subir a aplicação:
-
-- Swagger UI:  
-  `http://localhost:8080/swagger-ui/index.html`
-
-- OpenAPI JSON:  
-  `http://localhost:8080/v3/api-docs`
-
----
-
-## 🐳 Banco MySQL com Docker
-
-Este projeto pode utilizar **MySQL em container** e rodar a aplicação **localmente**.
-
-### 1) Subir MySQL
-Crie (ou use) um `docker-compose.yml` com o serviço do MySQL:
-
-```yaml
 services:
   mysql:
     image: mysql:8.0
@@ -140,62 +160,115 @@ services:
 
 volumes:
   mysql_data:
+Comandos
 
+# Subir MySQL
+docker-compose up -d
 
-▶️ Como executar localmente
+# Verificar status
+docker ps
+
+# Parar
+docker-compose down
+▶️ Como Executar
+
 Pré-requisitos
+
 Java 21
 Maven
-Docker (para subir o MySQL)
-1) Configurar datasource (MySQL)
-No application.properties:
-
-
+Docker (opcional, para MySQL)
+Opção 1: Com H2 (Desenvolvimento)
+1. Configure o application.properties:
+   
 spring.datasource.url=jdbc:h2:mem:socialmedia;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
 spring.datasource.username=sa
 spring.datasource.password=
 spring.datasource.driver-class-name=org.h2.Driver
 
-spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.ddl-auto=create
 spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
 
-2) Rodar aplicação
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+2. Execute:
+
 mvn clean spring-boot:run
 
-🧪 Testes Unitários (Service)
-Os testes unitários focam nas regras de negócio (ServiceImpl), usando JUnit 5 + Mockito.
+3. Acesse:
+API: http://localhost:8080
+H2 Console: http://localhost:8080/h2-console
+Swagger: http://localhost:8080/swagger-ui/index.html
+Opção 2: Com MySQL (Docker)
 
-Rodar testes:
+1. Suba o MySQL:
+
+docker-compose up -d mysql
+
+3. Configure o application.properties:
+
+spring.datasource.url=jdbc:mysql://localhost:3306/socialmeli
+spring.datasource.username=socialmeli
+spring.datasource.password=socialmeli
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+
+3. Execute:
+mvn clean spring-boot:run
+
+🧪 Testes
+# Todos os testes
 mvn test
 
-Recomendação (mínimo)
+# Teste específico
+mvn test -Dtest=UserServiceImplTest
+mvn test -Dtest=PostServiceImplTest
+
+
+Cobertura de Testes
+
 UserServiceImpl
+Teste	Cenário
+✅	Follow com sucesso
+✅	Follow self → BusinessException
+✅	Follow target não seller → BusinessException
+✅	Follow duplicado → ConflictException
+✅	Unfollow com sucesso
+✅	Unfollow sem seguir → ConflictException
+✅	Contagem de seguidores
+✅	Listagem com ordenação
 
-follow sucesso
-follow self → BusinessException
-follow target não seller → BusinessException
-follow duplicado → ConflictException
-unfollow sucesso
-unfollow sem seguir → ConflictException
 PostServiceImpl
+Teste	Cenário
+✅	Publish com seller → salva com hasPromo=false
+✅	Publish com buyer → BusinessException
+✅	PublishPromo discount inválido → BusinessException
+✅	PromoCount com buyer → BusinessException
+✅	Feed últimas 2 semanas
+✅	Order inválido → BusinessException
+⚠️ Tratamento de Erros
+A API retorna erros padronizados:
 
-publish com seller → salva, seta hasPromo=false, discount=0
-publish com buyer → BusinessException
-publishPromo discount inválido → BusinessException
-promoCount com buyer → BusinessException
-feed últimas 2 semanas retorna lista (ou vazio)
-order inválido → BusinessException
-⚠️ Tratamento de erros
-A API retorna erros padronizados (exemplo):
+json
+{
+  "timestamp": "2025-01-05T15:30:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "User cannot follow themselves",
+  "path": "/api/v1/users/1/follow/1"
+}
 
-timestamp
-status
-error
-message
-path
-fieldErrors (quando for validação)
-✅ Checklist de entrega
+Códigos de Erro
+Status	Exceção	Descrição
+400	BusinessException	Regra de negócio violada
+404	EntityNotFoundException	Recurso não encontrado
+409	ConflictException	Conflito (ex: já segue)
+422	ValidationException	Erro de validação
+
+✅ Checklist de Entrega
  Endpoints funcionando conforme requisitos
  Swagger acessível e documentando endpoints
  Validações e regras de negócio corretas
@@ -203,43 +276,13 @@ fieldErrors (quando for validação)
  Tratamento de erros padronizado
  Banco via Docker (MySQL) configurado
  Testes unitários (ServiceImpl) implementados
+ Testes de integração implementados
  README atualizado com instruções de execução
+ 
 👤 Autor
 Heinz Strabber Junior
-Recomendação (mínimo)
-UserServiceImpl
 
-follow sucesso
-follow self → BusinessException
-follow target não seller → BusinessException
-follow duplicado → ConflictException
-unfollow sucesso
-unfollow sem seguir → ConflictException
-PostServiceImpl
+GitHub
 
-publish com seller → salva, seta hasPromo=false, discount=0
-publish com buyer → BusinessException
-publishPromo discount inválido → BusinessException
-promoCount com buyer → BusinessException
-feed últimas 2 semanas retorna lista (ou vazio)
-order inválido → BusinessException
-⚠️ Tratamento de erros
-A API retorna erros padronizados (exemplo):
-
-timestamp
-status
-error
-message
-path
-fieldErrors (quando for validação)
-✅ Checklist de entrega
- Endpoints funcionando conforme requisitos
- Swagger acessível e documentando endpoints
- Validações e regras de negócio corretas
- Ordenação funcionando (name/date asc/desc)
- Tratamento de erros padronizado
- Banco via Docker (MySQL) configurado
- Testes unitários (ServiceImpl) implementados
- README atualizado com instruções de execução
-👤 Autor
-Heinz Strabber Junior
+📄 Licença
+Este projeto foi desenvolvido durante o Bootcamp do Mercado Livre para fins educacionais.
