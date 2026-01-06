@@ -11,15 +11,15 @@ import java.util.List;
 
 public interface UserFollowRepository extends JpaRepository<UserFollow, Integer> {
 
-    // ✅ Verifica se follow existe (COM @Query)
+    //Verifica se follow existe (COM @Query)
     @Query("SELECT COUNT(uf) > 0 FROM UserFollow uf WHERE uf.follower.userId = :followerId AND uf.seller.userId = :sellerId")
     boolean existsByFollowerIdAndSellerId(@Param("followerId") int followerId, @Param("sellerId") int sellerId);
 
-    // ✅ Conta seguidores (COM @Query)
+    //Conta seguidores (COM @Query)
     @Query("SELECT COUNT(uf) FROM UserFollow uf WHERE uf.seller.userId = :sellerId")
     long countBySellerId(@Param("sellerId") int sellerId);
 
-    // ✅ Deleta follow (COM @Query)
+    //Deleta follow (COM @Query)
     @Modifying
     @Query("DELETE FROM UserFollow uf WHERE uf.follower.userId = :followerId AND uf.seller.userId = :sellerId")
     void deleteByFollowerIdAndSellerId(@Param("followerId") int followerId, @Param("sellerId") int sellerId);
