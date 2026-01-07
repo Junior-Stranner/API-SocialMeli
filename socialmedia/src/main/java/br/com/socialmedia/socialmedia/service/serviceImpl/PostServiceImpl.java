@@ -55,7 +55,7 @@ public class PostServiceImpl implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public FollowedPostsResponse getFollowedPostsLastTwoWeeks(int userId, String order) {
-        findUserById(userId);
+        findBuyerById(userId);
         LocalDate since = LocalDate.now().minusWeeks(2);
 
         List<User> followedSellers = followRepository.findFollowedSellers(userId);
@@ -63,7 +63,10 @@ public class PostServiceImpl implements IPostService {
             return new FollowedPostsResponse(userId, List.of());
         }
 
-        List<Post> posts = postRepository.findByUserInAndDateAfterOrderByDateDesc(new HashSet<>(followedSellers), since);
+        List<Post> posts = postRepository.findByUserInAndDateAfterOrderByDateDesc(
+                new HashSet<>(followedSellers), since
+        );
+
         posts = sortPost(posts, order);
 
         return new FollowedPostsResponse(userId, posts.stream().map(postMapper::toDto).toList());

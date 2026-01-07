@@ -18,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -109,30 +110,29 @@ class SocialMeliIntegrationTest {
     @Test
     @DisplayName("US-0005: Deve registrar nova publicação e retornar 200")
     void us0005_publish_shouldReturn200_whenValid() throws Exception {
-        // Ajuste os nomes dos campos para o que seu controller realmente espera.
-        // Aqui mantive snake_case porque você usou isso no primeiro JSON.
-        String requestBody = """
-            {
-              "user_id": %d,
-              "date": "%s",
-              "product": {
-                "product_id": 1,
-                "product_name": "Mouse Gamer",
-                "type": "Periferico",
-                "brand": "Logitech",
-                "color": "Preto",
-                "notes": "RGB"
-              },
-              "category": 58,
-              "price": 299.90
-            }
-            """.formatted(seller.getUserId(), LocalDate.now());
+        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
-        mockMvc.perform(post("/api/v1/products/post")
+        String requestBody = """
+        {
+          "userId": %d,
+          "date": "%s",
+          "product": {
+            "productId": 1,
+            "productName": "Mouse Gamer",
+            "type": "Periferico",
+            "brand": "Logitech",
+            "color": "Preto",
+            "notes": "RGB"
+          },
+          "category": 58,
+          "price": 299.90
+        }
+        """.formatted(seller.getUserId(), date);
+
+        mockMvc.perform(post("/api/v1/posts/products/publish")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isOk());
-    }
+                .andExpect(status().isCreated());    }
 
     // ==================================================================================
     // US-0006: Obter posts das últimas 2 semanas dos vendedores seguidos (1 teste essencial)
@@ -170,26 +170,28 @@ class SocialMeliIntegrationTest {
     // ==================================================================================
 
     @Test
-    @DisplayName("Promo: Deve registrar publicação com promoção e retornar 200")
+    @DisplayName("Promo: Deve registrar publicação com promoção e retornar 201")
     void promo_publishPromo_shouldReturn200_whenValid() throws Exception {
+        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
         String requestBody = """
-            {
-              "user_id": %d,
-              "date": "%s",
-              "product": {
-                "product_id": 22,
-                "product_name": "Mouse Gamer",
-                "type": "Periferico",
-                "brand": "Logitech",
-                "color": "Preto",
-                "notes": "RGB"
-              },
-              "category": 58,
-              "price": 299.90,
-              "has_promo": true,
-              "discount": 25.0
-            }
-            """.formatted(seller.getUserId(), LocalDate.now());
+        {
+          "userId": %d,
+          "date": "%s",
+          "product": {
+            "productId": 22,
+            "productName": "Mouse Gamer",
+            "type": "Periferico",
+            "brand": "Logitech",
+            "color": "Preto",
+            "notes": "RGB"
+          },
+          "category": 58,
+          "price": 299.90,
+          "has_promo": true,
+          "discount": 0.25
+        }
+        """.formatted(seller.getUserId(), date);
 
         mockMvc.perform(post("/api/v1/posts/products/promo-pub")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -208,9 +210,8 @@ class SocialMeliIntegrationTest {
         createPost(seller, LocalDate.now(), true);
         createPost(seller, LocalDate.now(), false);
 
-        // Ajuste endpoint/param conforme seu controller real
-        mockMvc.perform(get("/api/v1/post/products/promo-post/count")
-                        .param("user_id", String.valueOf(seller.getUserId())))
+        mockMvc.perform(get("/api/v1/posts/products/promo-post/count")
+                        .param("userId", String.valueOf(seller.getUserId())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.promo_products_count").value(2));
     }

@@ -14,7 +14,8 @@ public class PromoPostPublishRequest {
 
         @NotNull(message = "date must not be null")
         @JsonFormat(pattern = "dd-MM-yyyy")
-        private LocalDate date = LocalDate.now();
+        @FutureOrPresent(message = "date must be today or in the future")
+        private LocalDate date;
 
         @Valid
         @NotNull(message = "product must not be null")
@@ -27,6 +28,7 @@ public class PromoPostPublishRequest {
         @Max(value = 10_000_000, message = "price must be <= 10000000")
         private Double price;
 
+        @Valid
         @JsonProperty("has_promo")
         @NotNull(message = "has_promo must not be null")
         private Boolean hasPromo;

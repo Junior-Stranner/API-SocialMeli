@@ -3,6 +3,7 @@ package br.com.socialmedia.socialmedia.dto.request;
 import br.com.socialmedia.socialmedia.dto.request.ProductRequest;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -16,7 +17,8 @@ public class PostPublishRequest {
 
         @NotNull(message = "date must not be null")
         @JsonFormat(pattern = "dd-MM-yyyy")
-        private LocalDate date = LocalDate.now();
+        @FutureOrPresent(message = "date must be today or in the future")
+        private LocalDate date;
 
         @Valid
         @NotNull(message = "product must not be null")

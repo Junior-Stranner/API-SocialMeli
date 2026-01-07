@@ -20,8 +20,9 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user.userId = :userId AND p.hasPromo = true")
     long countByUserIdAndHasPromoTrue(@Param("userId") int userId);
 
-    @Query("SELECT p FROM Post p WHERE p.user IN :users AND p.date > :date ORDER BY p.date DESC")
-    List<Post> findByUserInAndDateAfterOrderByDateDesc(@Param("users") Set<User> users, @Param("date") LocalDate date);
+    @Query("SELECT p FROM Post p WHERE p.user IN :users AND p.date >= :date ORDER BY p.date DESC")
+    List<Post> findByUserInAndDateAfterOrderByDateDesc(@Param("users") Set<User> users,
+                                                       @Param("date") LocalDate date);
 
     @Query("""
         SELECT p FROM Post p
