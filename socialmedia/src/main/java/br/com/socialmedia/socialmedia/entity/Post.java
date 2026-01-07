@@ -1,6 +1,8 @@
 package br.com.socialmedia.socialmedia.entity;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+
 import java.time.LocalDate;
 
 @Entity
@@ -17,7 +19,8 @@ public class Post {
     private User user;
 
     @Column(nullable = false)
-    private LocalDate date;
+    @CreatedDate
+    private LocalDate date = LocalDate.now();
 
     @Embedded
     private Product product;

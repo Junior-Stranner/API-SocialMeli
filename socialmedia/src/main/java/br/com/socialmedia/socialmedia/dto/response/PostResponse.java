@@ -22,7 +22,6 @@ public class PostResponse {
     private ProductResponse product;
 
     private int category;
-
     private Double price;
 
     @JsonProperty("has_promo")
@@ -45,4 +44,23 @@ public class PostResponse {
 
     public SellerDto getSeller() { return seller; }
     public void setSeller(SellerDto seller) { this.seller = seller; }
+
+    public LocalDate getDate() { return date; }
+    public void setDate(LocalDate date) { this.date = date; }
+
+    public Boolean getHasPromo() { return hasPromo; }
+    public void setHasPromo(Boolean hasPromo) { this.hasPromo = hasPromo; }
+
+    public Double getDiscount() { return discount; }
+    public void setDiscount(Double discount) { this.discount = discount; }
+
+    public int getPostId() { return postId; } // opcional, mas recomendado
+    public ProductResponse getProduct() { return product; }
+    public void setProduct(ProductResponse product) { this.product = product; }
+
+    public int getCategory() { return category; }
+    public void setCategory(int category) { this.category = category; }
+
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
 }

@@ -3,14 +3,34 @@ services:
     image: mysql:8.0
     container_name: socialmeli-mysql
     environment:
-      MYSQL_DATABASE: meli_social
-      MYSQL_USER: myuser
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: verysecret
+      MYSQL_DATABASE: socialmeli
+      MYSQL_USER: socialmeli
+      MYSQL_PASSWORD: socialmeli
+      MYSQL_ROOT_PASSWORD: root
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: socialmeli-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/socialmeli
+      SPRING_DATASOURCE_USERNAME: socialmeli
+      SPRING_DATASOURCE_PASSWORD: socialmeli
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
 
 volumes:
   mysql_data:

@@ -24,6 +24,11 @@ public class PostMapper {
 
     public Post toEntity(PostPublishRequest request) {
         Post post = modelMapper.map(request, Post.class);
+
+        if (request.getProduct() != null) {
+            Product p = modelMapper.map(request.getProduct(), Product.class);
+            post.setProduct(p);
+        }
         return post;
     }
 
