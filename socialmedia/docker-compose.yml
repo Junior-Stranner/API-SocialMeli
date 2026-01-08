@@ -12,10 +12,10 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -proot --silent"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   app:
     build: .
@@ -24,7 +24,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/socialmeli
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/socialmeli?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: socialmeli
       SPRING_DATASOURCE_PASSWORD: socialmeli
       SPRING_JPA_HIBERNATE_DDL_AUTO: update

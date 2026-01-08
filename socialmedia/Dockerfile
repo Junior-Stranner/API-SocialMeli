@@ -51,6 +51,6 @@ ENV JAVA_OPTS="-Xms256m -Xmx512m"
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 
 # Metadados da imagem
-LABEL maintainer="joaofilho"
-LABEL description="API Social Meli - Bootcamp MeLi"
+LABEL maintainer="Heinz Stranner Junior"
+LABEL description="API Social Meli - Mecado Livre"
 LABEL version="1.0"
