@@ -78,11 +78,11 @@
                 <scope>test</scope>
             </dependency>
 
-  <!--      <dependency>
+        <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
-        </dependency>-->
+        </dependency>
 
    <!--  <dependency>
             <groupId>org.mapstruct</groupId>
@@ -92,13 +92,14 @@
     </dependencies>
 
     <build>
+        <finalName>app</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <release>${maven.compiler.release}</release>
-
+                    <!--        <mainClass>br.com.socialmedia.socialmedia.SocialmediaApplication</mainClass> -->
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
