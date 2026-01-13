@@ -52,8 +52,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("T-0001: Deve lançar EntityNotFoundException quando usuário a seguir não existe")
     void follow_shouldThrowNotFoundException_whenUserNotFound() {
-        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
-        when(userRepository.findById(99)).thenReturn(Optional.empty());
+        when(userRepository.findById(1L)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> userService.follow(1, 99));
         verifyNoInteractions(followRepository);
@@ -62,8 +62,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("T-0001: Deve seguir normalmente quando usuário existe e é vendedor")
     void follow_shouldSave_whenUserExistsAndIsSeller() {
-        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
-        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(seller));
         when(followRepository.existsByFollowerIdAndSellerId(1, 3)).thenReturn(false);
 
         userService.follow(1, 3);
@@ -82,8 +82,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("Deve lançar BusinessException quando usuário a seguir não é vendedor")
     void follow_shouldThrowBusinessException_whenTargetIsNotSeller() {
-        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
-        when(userRepository.findById(2)).thenReturn(Optional.of(buyer2));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(buyer2));
 
         assertThrows(BusinessException.class, () -> userService.follow(1, 2));
         verifyNoInteractions(followRepository);
@@ -92,8 +92,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("Deve lançar ConflictException quando já está seguindo")
     void follow_shouldThrowConflictException_whenAlreadyFollowing() {
-        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
-        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(seller));
         when(followRepository.existsByFollowerIdAndSellerId(1, 3)).thenReturn(true);
 
         assertThrows(ConflictException.class, () -> userService.follow(1, 3));
@@ -107,8 +107,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("T-0002: Deve lançar EntityNotFoundException quando usuário a deixar de seguir não existe")
     void unfollow_shouldThrowNotFoundException_whenUserNotFound() {
-        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
-        when(userRepository.findById(99)).thenReturn(Optional.empty());
+        when(userRepository.findById(1L)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> userService.unfollow(1, 99));
         verifyNoInteractions(followRepository);
@@ -117,8 +117,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("T-0002: Deve deixar de seguir normalmente quando relacionamento existe")
     void unfollow_shouldDelete_whenFollowExists() {
-        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
-        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(seller));
         when(followRepository.existsByFollowerIdAndSellerId(1, 3)).thenReturn(true);
 
         userService.unfollow(1, 3);
@@ -129,8 +129,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("Deve lançar ConflictException quando não está seguindo")
     void unfollow_shouldThrowConflictException_whenNotFollowing() {
-        when(userRepository.findById(1)).thenReturn(Optional.of(buyer1));
-        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(buyer1));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(seller));
         when(followRepository.existsByFollowerIdAndSellerId(1, 3)).thenReturn(false);
 
         assertThrows(ConflictException.class, () -> userService.unfollow(1, 3));
@@ -141,7 +141,7 @@ class UserServiceImplTest {
     // Método auxiliar
     // ==================================================================================
 
-    private User createUser(int id, String name, boolean isSeller) {
+    private User createUser(long id, String name, boolean isSeller) {
         User user = new User(name, isSeller);
         user.setUserId(id);
         return user;
@@ -154,7 +154,7 @@ class UserServiceImplTest {
     @Test
     @DisplayName("T-0007: Deve retornar contagem correta de seguidores")
     void getFollowersCount_shouldReturnCorrectCount() {
-        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(seller));
         when(followRepository.countBySellerId(3)).thenReturn(5L);
 
         var result = userService.getFollowersCount(3);
@@ -169,7 +169,7 @@ class UserServiceImplTest {
     @Test
     @DisplayName("T-0003: Deve lançar exceção quando ordenação é inválida")
     void getFollowersList_shouldThrowException_whenInvalidOrder() {
-        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(seller));
 
         assertThrows(BusinessException.class, () -> userService.getFollowersList(3, "invalid"));
     }
@@ -180,7 +180,7 @@ class UserServiceImplTest {
         User userA = createUser(10, "Ana", false);
         User userB = createUser(11, "Bruno", false);
 
-        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(seller));
         when(followRepository.findFollowersOrderByNameAsc(3)).thenReturn(List.of(userA, userB));
         when(userMapper.toFollowList(any())).thenReturn(List.of(
                 new FollowDto(10, "Ana"),
@@ -199,7 +199,7 @@ class UserServiceImplTest {
         User userA = createUser(10, "Ana", false);
         User userB = createUser(11, "Bruno", false);
 
-        when(userRepository.findById(3)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(seller));
         when(followRepository.findFollowersOrderByNameDesc(3)).thenReturn(List.of(userB, userA));
         when(userMapper.toFollowList(any())).thenReturn(List.of(
                 new FollowDto(11, "Bruno"),

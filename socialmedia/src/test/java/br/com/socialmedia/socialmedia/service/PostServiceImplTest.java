@@ -48,20 +48,20 @@ class PostServiceImplTest {
     @BeforeEach
     void setup() {
         seller = new User("Seller", true);
-        seller.setUserId(10);
+        seller.setUserId(10L);
 
         buyer = new User("Buyer", false);
-        buyer.setUserId(20);
+        buyer.setUserId(20L);
     }
 
     @Test
     @DisplayName("US-0005: Deve publicar post normal quando user existe e é seller")
     void publish_shouldSaveNormalPost_whenSellerExists() {
         PostPublishRequest req = mock(PostPublishRequest.class);
-        when(req.getUserId()).thenReturn(10);
+        when(req.getUserId()).thenReturn(10L);
 
-        Post mapped = new Post();
-        when(userRepository.findById(10)).thenReturn(Optional.of(seller));
+        Post mapped = new Post(); // postId deve ficar null
+        when(userRepository.findById(10L)).thenReturn(Optional.of(seller));
         when(postMapper.toEntity(req)).thenReturn(mapped);
 
         service.publish(req);
@@ -69,7 +69,7 @@ class PostServiceImplTest {
         verify(postRepository).save(postCaptor.capture());
         Post saved = postCaptor.getValue();
 
-        assertEquals(0, saved.getPostId());
+        assertNull(saved.getPostId());
         assertSame(seller, saved.getUser());
         assertFalse(saved.isHasPromo());
         assertEquals(0.0, saved.getDiscount());
@@ -79,9 +79,9 @@ class PostServiceImplTest {
     @DisplayName("US-0005: Deve lançar EntityNotFoundException quando user não existe (post normal)")
     void publish_shouldThrowEntityNotFound_whenUserDoesNotExist() {
         PostPublishRequest req = mock(PostPublishRequest.class);
-        when(req.getUserId()).thenReturn(999);
+        when(req.getUserId()).thenReturn(999L);
 
-        when(userRepository.findById(999)).thenReturn(Optional.empty());
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> service.publish(req));
 
@@ -93,9 +93,9 @@ class PostServiceImplTest {
     @DisplayName("US-0005: Deve lançar BusinessException quando user existe mas não é seller (post normal)")
     void publish_shouldThrowBusinessException_whenUserIsNotSeller() {
         PostPublishRequest req = mock(PostPublishRequest.class);
-        when(req.getUserId()).thenReturn(20);
+        when(req.getUserId()).thenReturn(20L);
 
-        when(userRepository.findById(20)).thenReturn(Optional.of(buyer));
+        when(userRepository.findById(20L)).thenReturn(Optional.of(buyer));
 
         assertThrows(BusinessException.class, () -> service.publish(req));
 
@@ -107,11 +107,11 @@ class PostServiceImplTest {
     @DisplayName("Promo: Deve publicar post promo quando user é seller e discount é válido")
     void publishPromo_shouldSavePromoPost_whenSellerAndDiscountValid() {
         PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(10);
-        when(req.getDiscount()).thenReturn(25.0);
+        when(req.getUserId()).thenReturn(10L);
+        when(req.getDiscount()).thenReturn(0.25);
 
         Post mapped = new Post();
-        when(userRepository.findById(10)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(10L)).thenReturn(Optional.of(seller));
         when(postMapper.toEntity(req)).thenReturn(mapped);
 
         service.publishPromo(req);
@@ -119,20 +119,21 @@ class PostServiceImplTest {
         verify(postRepository).save(postCaptor.capture());
         Post saved = postCaptor.getValue();
 
-        assertEquals(0, saved.getPostId());
+        assertNull(saved.getPostId());
         assertSame(seller, saved.getUser());
         assertTrue(saved.isHasPromo());
-        assertEquals(25.0, saved.getDiscount());
+        assertEquals(0.25, saved.getDiscount());
     }
+
 
     @Test
     @DisplayName("Promo: Deve lançar BusinessException quando discount é null")
     void publishPromo_shouldThrowBusinessException_whenDiscountIsNull() {
         PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(10);
+        when(req.getUserId()).thenReturn(10L);
         when(req.getDiscount()).thenReturn(null);
 
-        when(userRepository.findById(10)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(10L)).thenReturn(Optional.of(seller));
 
         assertThrows(BusinessException.class, () -> service.publishPromo(req));
 
@@ -144,10 +145,10 @@ class PostServiceImplTest {
     @DisplayName("Promo: Deve lançar BusinessException quando discount <= 0")
     void publishPromo_shouldThrowBusinessException_whenDiscountIsZeroOrLess() {
         PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(10);
+        when(req.getUserId()).thenReturn(10L);
         when(req.getDiscount()).thenReturn(0.0);
 
-        when(userRepository.findById(10)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(10L)).thenReturn(Optional.of(seller));
 
         assertThrows(BusinessException.class, () -> service.publishPromo(req));
 
@@ -159,10 +160,10 @@ class PostServiceImplTest {
     @DisplayName("Promo: Deve lançar BusinessException quando discount > 100")
     void publishPromo_shouldThrowBusinessException_whenDiscountGreaterThan100() {
         PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(10);
+        when(req.getUserId()).thenReturn(10L);
         when(req.getDiscount()).thenReturn(101.0);
 
-        when(userRepository.findById(10)).thenReturn(Optional.of(seller));
+        when(userRepository.findById(10L)).thenReturn(Optional.of(seller));
 
         assertThrows(BusinessException.class, () -> service.publishPromo(req));
 
@@ -174,9 +175,9 @@ class PostServiceImplTest {
     @DisplayName("Promo: Deve lançar EntityNotFoundException quando user não existe")
     void publishPromo_shouldThrowEntityNotFound_whenUserDoesNotExist() {
         PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(999);
+        when(req.getUserId()).thenReturn(999L);
 
-        when(userRepository.findById(999)).thenReturn(Optional.empty());
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> service.publishPromo(req));
 
@@ -188,9 +189,9 @@ class PostServiceImplTest {
     @DisplayName("Promo: Deve lançar BusinessException quando user existe mas não é seller")
     void publishPromo_shouldThrowBusinessException_whenUserIsNotSeller() {
         PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(20);
+        when(req.getUserId()).thenReturn(20L);
 
-        when(userRepository.findById(20)).thenReturn(Optional.of(buyer));
+        when(userRepository.findById(20L)).thenReturn(Optional.of(buyer));
 
         assertThrows(BusinessException.class, () -> service.publishPromo(req));
 
