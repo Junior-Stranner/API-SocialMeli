@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -225,7 +226,7 @@ class SocialMeliIntegrationTest {
         post.setUser(user);
         post.setDate(date);
         post.setCategory(58);
-        post.setPrice(299.90);
+        post.setPrice(BigDecimal.valueOf(299.90));
         post.setHasPromo(hasPromo);
         post.setDiscount(hasPromo ? 25.0 : 0.0);
 

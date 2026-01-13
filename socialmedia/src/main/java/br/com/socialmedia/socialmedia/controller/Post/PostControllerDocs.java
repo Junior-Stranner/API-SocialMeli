@@ -52,7 +52,7 @@ public interface PostControllerDocs {
     @GetMapping("/products/followed/{userId}/list")
     ResponseEntity<FollowedPostsResponse> getFollowedPostsLastTwoWeeks(
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário (buyer)", example = "1")
-            @PathVariable int userId,
+            @PathVariable long userId,
             @Parameter(
                     in = ParameterIn.QUERY,
                     description = "Ordenação por data: date_asc ou date_desc",
@@ -91,7 +91,7 @@ public interface PostControllerDocs {
     @GetMapping("/products/promo-post/count")
     ResponseEntity<PromoCountResponse> getPromoCount(
             @Parameter(in = ParameterIn.QUERY, description = "ID do seller", example = "2")
-            @RequestParam int userId
+            @RequestParam long userId
     );
 
 
@@ -109,7 +109,7 @@ public interface PostControllerDocs {
     @GetMapping("/products/promo-post/list")
     ResponseEntity<PromoPostsResponse> getPromoPosts(
             @Parameter(in = ParameterIn.QUERY, description = "ID do seller", example = "3")
-            @RequestParam int userId
+            @RequestParam long userId
     );
 
     @Operation(
@@ -125,7 +125,7 @@ public interface PostControllerDocs {
     @GetMapping("/products/promo-post/list")
     ResponseEntity<PromoPostsResponse> getPromoPostsForFollower(
             @Parameter(in = ParameterIn.QUERY, description = "ID do seller", example = "2")
-            @RequestParam int sellerId,
-            @RequestParam int buyerId
+            @RequestParam long sellerId,
+            @RequestParam long buyerId
     );
 }

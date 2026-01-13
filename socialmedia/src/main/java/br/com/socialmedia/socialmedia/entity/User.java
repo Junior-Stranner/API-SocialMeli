@@ -3,7 +3,6 @@ package br.com.socialmedia.socialmedia.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
 import java.util.Objects;
 
 @Entity
@@ -13,7 +12,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name ="user_id")
-    private int userId;
+    private Long userId;
 
     @Column(name = "user_name", nullable = false, length = 80, unique = true)
     @Size(max = 80)
@@ -31,11 +30,11 @@ public class User {
         this.seller = seller;
     }
 
-    public int getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
@@ -64,6 +63,6 @@ public class User {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(userId);
+        return Math.toIntExact(userId);
     }
 }

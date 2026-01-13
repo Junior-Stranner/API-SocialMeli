@@ -26,9 +26,9 @@ public interface UserControllerDocs {
     @PostMapping("/{userId}/follow/{userIdToFollow}")
     ResponseEntity<Void> follow(
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário que irá seguir", example = "1")
-            @PathVariable int userId,
+            @PathVariable long userId,
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário que será seguido", example = "2")
-            @PathVariable int userIdToFollow
+            @PathVariable long userIdToFollow
     );
 
     @Operation(
@@ -41,9 +41,9 @@ public interface UserControllerDocs {
     @PostMapping("/{userId}/unfollow/{userIdToUnfollow}")
     ResponseEntity<Void> unfollow(
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário (follower)", example = "1")
-            @PathVariable int userId,
+            @PathVariable long userId,
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário que será deixado de seguir", example = "2")
-            @PathVariable int userIdToUnfollow
+            @PathVariable long userIdToUnfollow
     );
 
     @Operation(
@@ -59,7 +59,7 @@ public interface UserControllerDocs {
     @GetMapping("/{userId}/followers/count")
     ResponseEntity<FollowersCountDto> getFollowersCount(
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário (seller)", example = "2")
-            @PathVariable int userId
+            @PathVariable long userId
     );
 
     @Operation(
@@ -79,7 +79,7 @@ public interface UserControllerDocs {
     @GetMapping("/{userId}/followers/list")
     ResponseEntity<FollowersListDto> getFollowersList(
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário (seller)", example = "2")
-            @PathVariable int userId,
+            @PathVariable long userId,
             @Parameter(
                     in = ParameterIn.QUERY,
                     description = "Ordenação alfabética: name_asc ou name_desc",
@@ -105,7 +105,7 @@ public interface UserControllerDocs {
     @GetMapping("/{userId}/followed/list")
     ResponseEntity<FollowedListDto> getFollowedList(
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário (buyer)", example = "1")
-            @PathVariable int userId,
+            @PathVariable long userId,
             @Parameter(
                     in = ParameterIn.QUERY,
                     description = "Ordenação alfabética: name_asc ou name_desc",

@@ -38,7 +38,7 @@ public class UserServiceImpl implements IUserService {
 
     @Transactional
     @Override
-    public UserResponse follow(int userId, int userIdToFollow) {
+    public UserResponse follow(long userId, long userIdToFollow) {
         log.info("User {} try to follow user {}", userId, userIdToFollow);
         validateNotSameUser(userId, userIdToFollow);
 
@@ -54,7 +54,7 @@ public class UserServiceImpl implements IUserService {
 
     @Transactional
     @Override
-    public UserResponse unfollow(int userId, int userIdToUnfollow) {
+    public UserResponse unfollow(long userId, long userIdToUnfollow) {
         log.info("User {} attempting to unfollow user {}", userId, userIdToUnfollow);
         validateNotSameUser(userId, userIdToUnfollow);
 
@@ -69,35 +69,35 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public FollowersCountDto getFollowersCount(int userId) {
+    public FollowersCountDto getFollowersCount(long userId) {
         User seller = findSellerById(userId);
-        int count = (int) followRepository.countBySellerId(userId);
+        Integer count = Math.toIntExact(followRepository.countBySellerId(userId));
         log.debug("Seller {} has {} followers", userId, count);
         return new FollowersCountDto(seller.getUserId(), seller.getName(), count);
     }
 
     @Override
-    public FollowersListDto getFollowersList(int userId, String order) {
-        User seller = findSellerById(userId);
-        List<User> followers = findFollowersByOrder(userId, order);
+    public FollowersListDto getFollowersList(long sellerId, String order) {
+        User seller = findSellerById(sellerId);
+        List<User> followers = findFollowersByOrder(sellerId, order);
         List<FollowDto> followersDto = userMapper.toFollowList(followers);
-        return new FollowersListDto(userId, seller.getName(), followersDto);
+        return new FollowersListDto(sellerId, seller.getName(), followersDto);
     }
 
     @Override
-    public FollowedListDto getFollowedList(int userId, String order) {
-        User buyer = findBuyerById(userId);
-        List<User> followed = findFollowedByOrder(userId, order);
+    public FollowedListDto getFollowedList(long buyerId, String order) {
+        User buyer = findBuyerById(buyerId);
+        List<User> followed = findFollowedByOrder(buyerId, order);
         List<FollowDto> followedDto = userMapper.toFollowList(followed);
-        return new FollowedListDto(userId, buyer.getName(), followedDto);
+        return new FollowedListDto(buyerId, buyer.getName(), followedDto);
     }
 
-    private User findUserById(int userId) {
+    private User findUserById(long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
     }
 
-    private User findSellerById(int userId) {
+    private User findSellerById(long userId) {
         User user = findUserById(userId);
         if (!user.isSeller()) {
             throw new BusinessException("User " + userId + " is not a seller");
@@ -105,7 +105,7 @@ public class UserServiceImpl implements IUserService {
         return user;
     }
 
-    private User findBuyerById(int userId) {
+    private User findBuyerById(long userId) {
         User user = findUserById(userId);
         if (user.isSeller()) {
             throw new BusinessException("Seller cannot follow another seller");
@@ -113,7 +113,7 @@ public class UserServiceImpl implements IUserService {
         return user;
     }
 
-    private List<User> findFollowersByOrder(int userId, String order) {
+    private List<User> findFollowersByOrder(long userId, String order) {
         return switch (normalizeOrder(order)) {
             case "name_desc" -> followRepository.findFollowersOrderByNameDesc(userId);
             case "name_asc" -> followRepository.findFollowersOrderByNameAsc(userId);
@@ -121,7 +121,7 @@ public class UserServiceImpl implements IUserService {
         };
     }
 
-    private List<User> findFollowedByOrder(int userId, String order) {
+    private List<User> findFollowedByOrder(long userId, String order) {
         return switch (normalizeOrder(order)) {
             case "name_desc" -> followRepository.findFollowedOrderByNameDesc(userId);
             case "name_asc" -> followRepository.findFollowedOrderByNameAsc(userId);
@@ -129,7 +129,7 @@ public class UserServiceImpl implements IUserService {
         };
     }
 
-    private void validateNotSameUser(int userId, int targetId) {
+    private void validateNotSameUser(long userId, long targetId) {
         if (userId == targetId) {
             throw new BusinessException("User cannot follow/unfollow themselves");
         }

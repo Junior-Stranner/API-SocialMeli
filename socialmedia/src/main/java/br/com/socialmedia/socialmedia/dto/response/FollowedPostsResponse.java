@@ -6,6 +6,6 @@ import java.util.List;
 
 public record FollowedPostsResponse(
         @JsonProperty("user_id")
-        int userId,
+        long userId,
         List<PostResponse> posts
 ) {}

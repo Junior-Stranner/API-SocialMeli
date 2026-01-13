@@ -44,7 +44,7 @@ public class PostServiceImpl implements IPostService {
         User seller = findSellerById(request.getUserId());
 
         Post entity = postMapper.toEntity(request);
-        entity.setPostId(0);
+        entity.setPostId(null);
         entity.setUser(seller);
         entity.setHasPromo(false);
         entity.setDiscount(0.0);
@@ -54,7 +54,7 @@ public class PostServiceImpl implements IPostService {
 
     @Override
     @Transactional(readOnly = true)
-    public FollowedPostsResponse getFollowedPostsLastTwoWeeks(int userId, String order) {
+    public FollowedPostsResponse getFollowedPostsLastTwoWeeks(long userId, String order) {
         findBuyerById(userId);
         LocalDate since = LocalDate.now().minusWeeks(2);
 
@@ -64,8 +64,7 @@ public class PostServiceImpl implements IPostService {
         }
 
         List<Post> posts = postRepository.findByUserInAndDateAfterOrderByDateDesc(
-                new HashSet<>(followedSellers), since
-        );
+                new HashSet<>(followedSellers), since);
 
         posts = sortPost(posts, order);
 
@@ -78,7 +77,7 @@ public class PostServiceImpl implements IPostService {
         validatePromoDiscount(request.getDiscount());
 
         Post entity = postMapper.toEntity(request);
-        entity.setPostId(0);
+        entity.setPostId(null);
         entity.setUser(seller);
         entity.setHasPromo(true);
         entity.setDiscount(request.getDiscount());
@@ -87,14 +86,14 @@ public class PostServiceImpl implements IPostService {
     }
 
     @Override
-    public PromoCountResponse getPromoCount(int userId) {
+    public PromoCountResponse getPromoCount(long userId) {
         User seller = findSellerById(userId);
         long count = postRepository.countByUserIdAndHasPromoTrue(userId);
-        return new PromoCountResponse(userId, seller.getName(), Math.toIntExact(count));
+        return new PromoCountResponse(userId, seller.getName(), count);
     }
 
     @Override
-    public PromoPostsResponse getPromoPosts(int userId) {
+    public PromoPostsResponse getPromoPosts(long userId) {
         User seller = findSellerById(userId);
         List<Post> promoPosts = postRepository.findPromoPostsBySellerIdFetchUser(userId);
         return new PromoPostsResponse(
@@ -106,7 +105,7 @@ public class PostServiceImpl implements IPostService {
 
     @Override
     @Transactional(readOnly = true)
-    public PromoPostsResponse getPromoPostsForFollower(int buyerId, int sellerId) {
+    public PromoPostsResponse getPromoPostsForFollower(long buyerId, long sellerId) {
         findBuyerById(buyerId);
         User seller = findSellerById(sellerId);
 
@@ -122,12 +121,12 @@ public class PostServiceImpl implements IPostService {
         );
     }
 
-    private User findUserById(int userId) {
+    private User findUserById(long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
     }
 
-    private User findSellerById(int sellerId){
+    private User findSellerById(long sellerId){
         User user = findUserById(sellerId);
         if (!user.isSeller()) {
             throw new BusinessException("User " + user.getUserId() + " is not a seller");
@@ -135,7 +134,7 @@ public class PostServiceImpl implements IPostService {
         return user;
     }
 
-    private User findBuyerById(int buyerId){
+    private User findBuyerById(long buyerId){
         User user = findUserById(buyerId);
         if (user.isSeller()) {
             throw new BusinessException("User " + user.getUserId() + " is a seller, not a buyer");

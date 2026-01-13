@@ -3,18 +3,17 @@ package br.com.socialmedia.socialmedia.dto.response;
 import br.com.socialmedia.socialmedia.dto.SellerDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class PostResponse {
 
     @JsonProperty("user_id")
-    private int userId;
+    private long userId;
 
     @JsonProperty("post_id")
-    private int postId;
+    private long postId;
 
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
@@ -22,14 +21,14 @@ public class PostResponse {
     private ProductResponse product;
 
     private int category;
-    private Double price;
+
+    private BigDecimal price;
 
     @JsonProperty("has_promo")
     private Boolean hasPromo;
 
-    @DecimalMin(value = "0.0", inclusive = false)
-    @DecimalMax(value = "1.0", inclusive = false)
-    private Double discount;
+
+    private double discount;
 
     @JsonProperty("is_seller")
     private SellerDto seller;
@@ -37,10 +36,10 @@ public class PostResponse {
     public PostResponse() {
     }
 
-    public int getUserId() { return userId; }
-    public void setUserId(int userId) { this.userId = userId; }
+    public long getUserId() { return userId; }
+    public void setUserId(long userId) { this.userId = userId; }
 
-    public void setPostId(int postId) { this.postId = postId; }
+    public void setPostId(long postId) { this.postId = postId; }
 
     public SellerDto getSeller() { return seller; }
     public void setSeller(SellerDto seller) { this.seller = seller; }
@@ -51,16 +50,16 @@ public class PostResponse {
     public Boolean getHasPromo() { return hasPromo; }
     public void setHasPromo(Boolean hasPromo) { this.hasPromo = hasPromo; }
 
-    public Double getDiscount() { return discount; }
-    public void setDiscount(Double discount) { this.discount = discount; }
+    public double getDiscount() { return discount; }
+    public void setDiscount(double discount) { this.discount = discount; }
 
-    public int getPostId() { return postId; } // opcional, mas recomendado
+    public long getPostId() { return postId; } // opcional, mas recomendado
     public ProductResponse getProduct() { return product; }
     public void setProduct(ProductResponse product) { this.product = product; }
 
     public int getCategory() { return category; }
     public void setCategory(int category) { this.category = category; }
 
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
 }

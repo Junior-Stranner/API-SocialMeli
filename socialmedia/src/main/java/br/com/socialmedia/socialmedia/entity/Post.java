@@ -1,9 +1,8 @@
 package br.com.socialmedia.socialmedia.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.FutureOrPresent;
-import org.springframework.data.annotation.CreatedDate;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -13,7 +12,7 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
-    private int postId;
+    private Long postId;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -29,7 +28,7 @@ public class Post {
     private int category;
 
     @Column(nullable = false)
-    private double price;
+    private BigDecimal price;
 
     @Column(name = "has_promo", nullable = false)
     private boolean hasPromo;
@@ -39,11 +38,11 @@ public class Post {
 
     public Post() {}
 
-    public int getPostId() {
+    public Long getPostId() {
         return postId;
     }
 
-    public void setPostId(int postId) {
+    public void setPostId(Long postId) {
         this.postId = postId;
     }
 
@@ -79,11 +78,11 @@ public class Post {
         this.category = category;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -115,6 +114,6 @@ public class Post {
 
     @Override
     public int hashCode() {
-        return postId;
+        return Math.toIntExact(postId);
     }
 }

@@ -10,13 +10,13 @@ public interface IPostService {
 
     void publish(PostPublishRequest request);
 
-    FollowedPostsResponse getFollowedPostsLastTwoWeeks(int userId, String order);
+    FollowedPostsResponse getFollowedPostsLastTwoWeeks(long userId, String order);
 
     void publishPromo(PromoPostPublishRequest request);
 
-    PromoCountResponse getPromoCount(int userId);
+    PromoCountResponse getPromoCount(long userId);
 
-    PromoPostsResponse getPromoPostsForFollower(int buyerId, int sellerId);
+    PromoPostsResponse getPromoPostsForFollower(long buyerId, long sellerId);
 
-    PromoPostsResponse getPromoPosts(int userId);
+    PromoPostsResponse getPromoPosts(long userId);
 }

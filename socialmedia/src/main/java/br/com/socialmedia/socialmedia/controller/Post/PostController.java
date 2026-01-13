@@ -29,7 +29,7 @@ public class PostController implements PostControllerDocs{
 
     @GetMapping("/products/followed/{userId}/list")
     public ResponseEntity<FollowedPostsResponse> getFollowedPostsLastTwoWeeks(
-            @PathVariable int userId,
+            @PathVariable long userId,
             @RequestParam(required = false, defaultValue = "date_desc") String order
     ) {
         FollowedPostsResponse response = postService.getFollowedPostsLastTwoWeeks(userId, order);
@@ -43,21 +43,21 @@ public class PostController implements PostControllerDocs{
     }
 
     @GetMapping("/products/promo-post/count")
-    public ResponseEntity<PromoCountResponse> getPromoCount(@RequestParam int userId) {
+    public ResponseEntity<PromoCountResponse> getPromoCount(@RequestParam long userId) {
         PromoCountResponse response = postService.getPromoCount(userId);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/products/promo-post/list")
-    public ResponseEntity<PromoPostsResponse> getPromoPosts(@RequestParam int userId) {
+    public ResponseEntity<PromoPostsResponse> getPromoPosts(@RequestParam long userId) {
         return ResponseEntity.ok(postService.getPromoPosts(userId));
     }
 
 
     @GetMapping("/products/promo-post/list/follower")
     public ResponseEntity<PromoPostsResponse> getPromoPostsForFollower(
-            @RequestParam int buyerId,
-            @RequestParam int sellerId
+            @RequestParam long buyerId,
+            @RequestParam long sellerId
     ) {
         return ResponseEntity.ok(postService.getPromoPostsForFollower(buyerId, sellerId));
     }

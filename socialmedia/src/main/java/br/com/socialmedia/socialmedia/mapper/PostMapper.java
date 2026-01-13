@@ -55,7 +55,7 @@ public class PostMapper {
         if (seller == null) {
             return null;
         }
-        return new SellerDto(seller.getUserId(), seller.getName());
+        return new SellerDto(Math.toIntExact(seller.getUserId()), seller.getName());
     }
 
     public List<PostResponse> toResponseList(List<Post> posts) {

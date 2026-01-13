@@ -7,13 +7,13 @@ import br.com.socialmedia.socialmedia.dto.response.UserResponse;
 
 public interface IUserService {
 
-    UserResponse follow(int userId, int userIdToFollow);
+    UserResponse follow(long userId, long userIdToFollow);
 
-    UserResponse unfollow(int userId, int userIdToUnfollow);
+    UserResponse unfollow(long userId, long userIdToUnfollow);
 
-    FollowersCountDto getFollowersCount(int userId);
+    FollowersCountDto getFollowersCount(long userId);
 
-    FollowersListDto getFollowersList(int userId, String order);
+    FollowersListDto getFollowersList(long userId, String order);
 
-    FollowedListDto getFollowedList(int userId, String order);
+    FollowedListDto getFollowedList(long userId, String order);
 }

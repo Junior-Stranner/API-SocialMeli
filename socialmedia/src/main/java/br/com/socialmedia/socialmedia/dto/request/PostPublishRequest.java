@@ -1,19 +1,17 @@
 package br.com.socialmedia.socialmedia.dto.request;
 
-import br.com.socialmedia.socialmedia.dto.request.ProductRequest;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class PostPublishRequest {
 
-        @Min(value = 1, message = "user_id must be greater than zero")
-        private int userId;
+        @NotNull
+        @Positive
+        private Long userId;
 
         @NotNull(message = "date must not be null")
         @JsonFormat(pattern = "dd-MM-yyyy")
@@ -28,16 +26,17 @@ public class PostPublishRequest {
         private int category;
 
         @NotNull(message = "price must not be null")
-        @Max(value = 10_000_000, message = "price must be <= 10000000")
-        private Double price;
+        @DecimalMax(value = "10000000.00")
+        @DecimalMin(value = "0.0", inclusive = false)
+        private BigDecimal price;
 
         public PostPublishRequest() {}
 
-        public int getUserId() {
+        public Long getUserId() {
                 return userId;
         }
 
-        public void setUserId(int userId) {
+        public void setUserId(Long userId) {
                 this.userId = userId;
         }
 
@@ -65,11 +64,11 @@ public class PostPublishRequest {
                 this.category = category;
         }
 
-        public Double getPrice() {
+        public BigDecimal getPrice() {
                 return price;
         }
 
-        public void setPrice(Double price) {
+        public void setPrice(BigDecimal price) {
                 this.price = price;
         }
 }

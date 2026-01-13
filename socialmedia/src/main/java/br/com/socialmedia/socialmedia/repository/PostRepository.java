@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Set;
 
 @Repository
-public interface PostRepository extends JpaRepository<Post, Integer> {
+public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.user.userId = :userId AND p.hasPromo = true ORDER BY p.date DESC")
-    List<Post> findByUserIdAndHasPromoTrueOrderByDateDesc(@Param("userId") int userId);
+    List<Post> findByUserIdAndHasPromoTrueOrderByDateDesc(@Param("userId") long userId);
 
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user.userId = :userId AND p.hasPromo = true")
-    long countByUserIdAndHasPromoTrue(@Param("userId") int userId);
+    long countByUserIdAndHasPromoTrue(@Param("userId") long userId);
 
     @Query("SELECT p FROM Post p WHERE p.user IN :users AND p.date >= :date ORDER BY p.date DESC")
     List<Post> findByUserInAndDateAfterOrderByDateDesc(@Param("users") Set<User> users,
@@ -30,5 +30,5 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
         WHERE u.userId = :sellerId AND p.hasPromo = true
         ORDER BY p.date DESC
     """)
-    List<Post> findPromoPostsBySellerIdFetchUser(@Param("sellerId") int sellerId);
+    List<Post> findPromoPostsBySellerIdFetchUser(@Param("sellerId") long sellerId);
 }

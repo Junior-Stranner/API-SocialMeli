@@ -1,6 +1,8 @@
 package br.com.socialmedia.socialmedia.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -9,7 +11,7 @@ public class UserFollow {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     // Quem segue (buyer)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -21,7 +23,8 @@ public class UserFollow {
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
 
-    @Column(name = "followed_at", nullable = false)
+    @CreationTimestamp
+    @Column(name = "followed_at", nullable = false, updatable = false)
     private LocalDateTime followedAt;
 
     protected UserFollow() {
@@ -30,6 +33,7 @@ public class UserFollow {
     public UserFollow(User follower, User seller) {
         this.follower = follower;
         this.seller = seller;
+        this.followedAt = LocalDateTime.now();
     }
 
     @PrePersist
@@ -37,7 +41,7 @@ public class UserFollow {
         this.followedAt = LocalDateTime.now();
     }
 
-    public int getId() { return id; }
+    public Long getId() { return id; }
     public User getFollower() { return follower; }
     public User getSeller() { return seller; }
     public LocalDateTime getFollowedAt() { return followedAt; }

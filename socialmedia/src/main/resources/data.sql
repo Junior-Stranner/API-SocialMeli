@@ -5,12 +5,14 @@ INSERT INTO tb_user (user_id, user_name, is_seller) VALUES
                                                         (4, 'Jose Vendedor', TRUE),
                                                         (5, 'Tech Store', TRUE),
                                                         (6, 'Loja Games', TRUE),
-                                                        (7, 'Loja de Futebol', TRUE);
+                                                        (7, 'Loja de Futebol', TRUE),
+                                                        (8, 'Carla', FALSE);
 
 INSERT INTO tb_user_follow (id, follower_id, seller_id, followed_at) VALUES
                                                                          (1, 1, 4, '2025-12-01 10:00:00'),
                                                                          (2, 1, 5, '2025-12-02 11:00:00'),
-                                                                         (3, 2, 4, '2025-12-03 12:00:00'),                                                                         (4, 2, 5, '2025-12-04 13:00:00'),
+                                                                         (3, 2, 4, '2025-12-03 12:00:00'),
+                                                                         (4, 2, 5, '2025-12-04 13:00:00'),
                                                                          (5, 2, 6, '2025-12-05 14:00:00'),
                                                                          (6, 3, 5, '2025-12-06 15:00:00'),
                                                                          (7, 3, 6, '2025-12-07 16:00:00');

@@ -19,27 +19,27 @@ public class UserController implements UserControllerDocs{
 
     // US 0001 - Follow
     @PostMapping("/{userId}/follow/{userIdToFollow}")
-    public ResponseEntity<Void> follow(@PathVariable int userId, @PathVariable int userIdToFollow) {
+    public ResponseEntity<Void> follow(@PathVariable long userId, @PathVariable long userIdToFollow) {
         userService.follow(userId, userIdToFollow);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{userId}/unfollow/{userIdToUnfollow}")
-    public ResponseEntity<Void> unfollow(@PathVariable int userId, @PathVariable int userIdToUnfollow) {
+    public ResponseEntity<Void> unfollow(@PathVariable long userId, @PathVariable long userIdToUnfollow) {
         userService.unfollow(userId, userIdToUnfollow);
         return ResponseEntity.ok().build();
     }
 
     // US 0002 - Followers count
     @GetMapping("/{userId}/followers/count")
-    public ResponseEntity<FollowersCountDto> getFollowersCount(@PathVariable int userId) {
+    public ResponseEntity<FollowersCountDto> getFollowersCount(@PathVariable long userId) {
         return ResponseEntity.ok(userService.getFollowersCount(userId));
     }
 
     // US 0003 - Followers list (Quem me segue?) + order
     @GetMapping("/{userId}/followers/list")
     public ResponseEntity<FollowersListDto> getFollowersList(
-            @PathVariable int userId,
+            @PathVariable long userId,
             @RequestParam(required = false, defaultValue = "name_asc") String order
     ) {
         return ResponseEntity.ok(userService.getFollowersList(userId, order));
@@ -48,26 +48,10 @@ public class UserController implements UserControllerDocs{
     // US 0004 - Followed list (Quem estou seguindo?) + order (conforme documento: wrapper)
     @GetMapping("/{userId}/followed/list")
     public ResponseEntity<FollowedListDto> getFollowedList(
-            @PathVariable int userId,
+            @PathVariable long userId,
             @RequestParam(required = false, defaultValue = "name_asc") String order
     ) {
         return ResponseEntity.ok(userService.getFollowedList(userId, order));
     }
 
-  /*
-    @GetMapping("/{userId}/followers")
-    public ResponseEntity<List<UserResponse>> getFollowers(
-            @PathVariable int userId,
-            @RequestParam(required = false, defaultValue = "name_asc") String order
-    ) {
-        return ResponseEntity.ok(userService.getFollowers(userId, order));
-    }
-
-    @GetMapping("/{userId}/followed")
-    public ResponseEntity<List<UserResponse>> getFollowed(
-            @PathVariable int userId,
-            @RequestParam(required = false, defaultValue = "name_asc") String order
-    ) {
-        return ResponseEntity.ok(userService.getFollowed(userId, order));
-    }*/
 }
