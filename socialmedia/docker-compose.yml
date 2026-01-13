@@ -2,18 +2,27 @@ services:
   mysql:
     image: mysql:8.0
     container_name: socialmeli-mysql
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
+      # dados persistentes do MySQL (apenas 1 volume aqui)
       - mysql_data:/var/lib/mysql
+
+      # seed: executa só na primeira vez que o volume mysql_data for criado do zero
+      - ./src/main/resources/data.sql:/docker-entrypoint-initdb.d/01-data.sql:ro
+
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p${MYSQL_ROOT_PASSWORD} --silent"]
       interval: 10s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
+
   app:
     build: .
     container_name: socialmeli-app
@@ -26,6 +35,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      SPRING_SQL_INIT_MODE: never
     ports:
       - "8080:8080"
     restart: unless-stopped
