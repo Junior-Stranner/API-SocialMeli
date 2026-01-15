@@ -145,7 +145,7 @@ public class PostServiceImpl implements IPostService {
     private void validatePromoDiscount(Double discount) {
         if (discount == null) throw new BusinessException("Discount is required for promo post");
         if (discount <= 0) throw new BusinessException("Discount must be greater than 0");
-        if (discount > 100) throw new BusinessException("Discount cannot be greater than 100");
+        if (discount >= 1) throw new BusinessException("Discount must be less than 1");
     }
 
     private List<Post> sortPost(List<Post> posts, String order) {
