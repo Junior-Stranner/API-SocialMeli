@@ -23,11 +23,12 @@ public interface UserControllerDocs {
     @ApiResponse(responseCode = "200", description = "Follow realizado com sucesso")
     @ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content)
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
+    @ApiResponse(responseCode = "409", description = "Usuário alvo não é um seller (não é possível seguir buyers) ou Esse Usuário Já está seguindo aquele Usuário" , content = @Content)
     @PostMapping("/{userId}/follow/{userIdToFollow}")
     ResponseEntity<Void> follow(
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário que irá seguir", example = "1")
             @PathVariable long userId,
-            @Parameter(in = ParameterIn.PATH, description = "ID do usuário que será seguido", example = "2")
+            @Parameter(in = ParameterIn.PATH, description = "ID do usuário que será seguido (deve ser seller)", example = "4")
             @PathVariable long userIdToFollow
     );
 
@@ -38,11 +39,12 @@ public interface UserControllerDocs {
     @ApiResponse(responseCode = "200", description = "Unfollow realizado com sucesso")
     @ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content)
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
+    @ApiResponse(responseCode = "409", description = "Usuário alvo não é um seller (não é possível deixar de seguir buyers) ou Esse Usuário não está seguindo aquele Usuário\"", content = @Content)
     @PostMapping("/{userId}/unfollow/{userIdToUnfollow}")
     ResponseEntity<Void> unfollow(
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário (follower)", example = "1")
             @PathVariable long userId,
-            @Parameter(in = ParameterIn.PATH, description = "ID do usuário que será deixado de seguir", example = "2")
+            @Parameter(in = ParameterIn.PATH, description = "ID do usuário que será deixado de seguir (deve ser seller)", example = "4")
             @PathVariable long userIdToUnfollow
     );
 
@@ -56,9 +58,10 @@ public interface UserControllerDocs {
             content = @Content(schema = @Schema(implementation = FollowersCountDto.class))
     )
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
+    @ApiResponse(responseCode = "409", description = "Usuário informado não é um seller (buyers não possuem seguidores no contexto do SocialMeli)", content = @Content)
     @GetMapping("/{userId}/followers/count")
     ResponseEntity<FollowersCountDto> getFollowersCount(
-            @Parameter(in = ParameterIn.PATH, description = "ID do usuário (seller)", example = "2")
+            @Parameter(in = ParameterIn.PATH, description = "ID do usuário (seller)", example = "4")
             @PathVariable long userId
     );
 
@@ -76,9 +79,10 @@ public interface UserControllerDocs {
     )
     @ApiResponse(responseCode = "400", description = "Parâmetro 'order' inválido", content = @Content)
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
+    @ApiResponse(responseCode = "409", description = "Usuário informado não é um seller (buyers não possuem seguidores no contexto do SocialMeli)", content = @Content)
     @GetMapping("/{userId}/followers/list")
     ResponseEntity<FollowersListDto> getFollowersList(
-            @Parameter(in = ParameterIn.PATH, description = "ID do usuário (seller)", example = "2")
+            @Parameter(in = ParameterIn.PATH, description = "ID do usuário (seller)", example = "4")
             @PathVariable long userId,
             @Parameter(
                     in = ParameterIn.QUERY,
@@ -102,6 +106,7 @@ public interface UserControllerDocs {
     )
     @ApiResponse(responseCode = "400", description = "Parâmetro 'order' inválido", content = @Content)
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
+    @ApiResponse(responseCode = "409", description = "Usuário informado é um seller (sellers não seguem outros sellers no contexto do SocialMeli)", content = @Content)
     @GetMapping("/{userId}/followed/list")
     ResponseEntity<FollowedListDto> getFollowedList(
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário (buyer)", example = "1")
