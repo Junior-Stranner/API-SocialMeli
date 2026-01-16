@@ -46,7 +46,6 @@ public class PostServiceImpl implements IPostService {
     @Override
     public void publish(PostPublishRequest request) {
         log.info("Publish post request: userId={}", request.getUserId());
-
         User seller = findSellerById(request.getUserId());
 
         Post entity = postMapper.toEntity(request);
@@ -64,7 +63,6 @@ public class PostServiceImpl implements IPostService {
     public FollowedPostsResponse getFollowedPostsLastTwoWeeks(long userId, String order) {
         LocalDate since = LocalDate.now().minusWeeks(2);
         log.debug("Get followed posts last two weeks: buyerId={}, order={}, since={}", userId, order, since);
-
         findBuyerById(userId);
 
         List<User> followedSellers = followRepository.findFollowedSellers(userId);
@@ -72,7 +70,6 @@ public class PostServiceImpl implements IPostService {
             log.debug("Buyer {} follows no sellers. Returning empty feed.", userId);
             return new FollowedPostsResponse(userId, List.of());
         }
-
         log.debug("Buyer {} follows {} sellers", userId, followedSellers.size());
 
         List<Post> posts = postRepository.findByUserInAndDateAfterOrderByDateDesc(
@@ -81,7 +78,6 @@ public class PostServiceImpl implements IPostService {
         log.debug("Posts fetched before sorting: buyerId={}, postsCount={}", userId, posts.size());
 
         posts = sortPost(posts, order);
-
         log.debug("Feed ready: buyerId={}, postsCount={}", userId, posts.size());
 
         return new FollowedPostsResponse(userId, posts.stream().map(postMapper::toDto).toList());
@@ -136,18 +132,15 @@ public class PostServiceImpl implements IPostService {
     @Transactional(readOnly = true)
     public PromoPostsResponse getPromoPostsForFollower(long buyerId, long sellerId) {
         log.debug("Get promo posts for follower: buyerId={}, sellerId={}", buyerId, sellerId);
-
         findBuyerById(buyerId);
         User seller = findSellerById(sellerId);
 
         boolean follows = followRepository.existsByFollowerIdAndSellerId(buyerId, sellerId);
         if (!follows) {
-            log.warn("Buyer {} does not follow seller {}. Denying promo posts access.", buyerId, sellerId);
             throw new BusinessException("Buyer does not follow this seller");
         }
 
         List<Post> promoPosts = postRepository.findPromoPostsBySellerIdFetchUser(sellerId);
-
         log.debug("Promo posts returned to follower: buyerId={}, sellerId={}, size={}", buyerId, sellerId, promoPosts.size());
 
         return new PromoPostsResponse(
@@ -159,16 +152,12 @@ public class PostServiceImpl implements IPostService {
 
     private User findUserById(long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("User not found: userId={}", userId);
-                    return new EntityNotFoundException("User with id " + userId + " not found");
-                });
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
     }
 
     private User findSellerById(long sellerId) {
         User user = findUserById(sellerId);
         if (!user.isSeller()) {
-            log.warn("Role validation failed: userId={} is not a seller", user.getUserId());
             throw new BusinessException("User " + user.getUserId() + " is not a seller");
         }
         return user;
@@ -177,24 +166,14 @@ public class PostServiceImpl implements IPostService {
     private User findBuyerById(long buyerId) {
         User user = findUserById(buyerId);
         if (user.isSeller()) {
-            log.warn("Role validation failed: userId={} is a seller, not a buyer", user.getUserId());
             throw new BusinessException("User " + user.getUserId() + " is a seller, not a buyer");
         }
         return user;
     }
 
     private void validatePromoDiscount(Double discount) {
-        if (discount == null) {
-            log.warn("Invalid promo discount: discount=null");
-            throw new BusinessException("Discount is required for promo post");
-        }
-        if (discount <= 0) {
-            log.warn("Invalid promo discount: discount={} (must be > 0)", discount);
-            throw new BusinessException("Discount must be greater than 0");
-        }
-        if (discount >= 1) {
-            log.warn("Invalid promo discount: discount={} (must be < 1)", discount);
-            throw new BusinessException("Discount must be less than 1");
+        if (discount == null || discount <= 0 || discount >= 1) {
+            throw new BusinessException("Invalid discount");
         }
     }
 
@@ -207,8 +186,6 @@ public class PostServiceImpl implements IPostService {
                     .sorted((a, b) -> a.getDate().compareTo(b.getDate()))
                     .toList();
         }
-
-        log.warn("Invalid order param for followed posts: order={}", order);
         throw new BusinessException("Invalid order param: " + order);
     }
 }

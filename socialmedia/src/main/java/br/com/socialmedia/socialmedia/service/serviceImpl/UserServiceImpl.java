@@ -54,6 +54,7 @@ public class UserServiceImpl implements IUserService {
         return userMapper.toDto(seller);
     }
 
+
     @Transactional
     @Override
     public UserResponse unfollow(long userId, long userIdToUnfollow) {
@@ -108,16 +109,13 @@ public class UserServiceImpl implements IUserService {
     }
 
     private User findUserById(long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> {
-            log.warn("User not found: userId={}", userId);
-            return new EntityNotFoundException("User with id " + userId + " not found");
-        });
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
     }
 
     private User findSellerById(long userId) {
         User user = findUserById(userId);
         if (!user.isSeller()) {
-            log.warn("Role conflict: userId={} is not a seller", userId);
             throw new BusinessException("User " + userId + " is not a seller");
         }
         return user;
@@ -126,7 +124,6 @@ public class UserServiceImpl implements IUserService {
     private User findBuyerById(long userId) {
         User user = findUserById(userId);
         if (user.isSeller()) {
-            log.warn("Role conflict: userId={} is seller, expected buyer", userId);
             throw new BusinessException("User " + userId + " is a seller; only buyers can perform this operation");
         }
         return user;
@@ -137,7 +134,6 @@ public class UserServiceImpl implements IUserService {
             case "name_desc" -> followRepository.findFollowersOrderByNameDesc(userId);
             case "name_asc" -> followRepository.findFollowersOrderByNameAsc(userId);
             default -> {
-                log.warn("Invalid order param (followers list): sellerId={}, order={}", userId, order);
                 throw new BusinessException("Invalid order param: " + order);
             }
         };
@@ -147,16 +143,13 @@ public class UserServiceImpl implements IUserService {
         return switch (order) {
             case "name_desc" -> followRepository.findFollowedOrderByNameDesc(userId);
             case "name_asc" -> followRepository.findFollowedOrderByNameAsc(userId);
-            default -> {
-                log.warn("Invalid order param (followed list): buyerId={}, order={}", userId, order);
-                throw new BusinessException("Invalid order param: " + order);
-            }
+            default -> throw new BusinessException("Invalid order param: " + order);
+
         };
     }
 
     private void validateNotSameUser(long userId, long targetId) {
         if (userId == targetId) {
-            log.warn("Invalid operation: userId equals targetId (userId={})", userId);
             throw new BusinessException("User cannot follow/unfollow themselves");
         }
     }
@@ -166,7 +159,6 @@ public class UserServiceImpl implements IUserService {
 
         boolean exists = followRepository.existsByFollowerIdAndSellerId(buyer.getUserId(), seller.getUserId());
         if (exists) {
-            log.warn("Follow conflict: followerId={} already follows sellerId={}", buyer.getUserId(), seller.getUserId());
             throw new ConflictException("User " + buyer.getUserId() + " is already following user " + seller.getUserId());
         }
     }
@@ -176,18 +168,15 @@ public class UserServiceImpl implements IUserService {
 
         boolean exists = followRepository.existsByFollowerIdAndSellerId(buyer.getUserId(), seller.getUserId());
         if (!exists) {
-            log.warn("Unfollow conflict: followerId={} does not follow sellerId={}", buyer.getUserId(), seller.getUserId());
             throw new ConflictException("User " + buyer.getUserId() + " is not following user " + seller.getUserId());
         }
     }
 
     private void validateUserRoles(User buyer, User seller) {
         if (!seller.isSeller()) {
-            log.warn("Role conflict: targetId={} is not seller", seller.getUserId());
             throw new BusinessException("User " + seller.getUserId() + " is not a seller");
         }
         if (buyer.isSeller()) {
-            log.warn("Role conflict: followerId={} is seller (sellers cannot follow)", buyer.getUserId());
             throw new BusinessException("Seller cannot follow another seller");
         }
     }

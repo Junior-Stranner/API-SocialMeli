@@ -24,9 +24,15 @@ import java.time.format.DateTimeFormatter;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
+@SpringBootTest/*Carrega o contexto inteiro do Spring Boot.
+É mais pesado, mas te dá um cenário real.*/
+@AutoConfigureMockMvc/*Cria e injeta o MockMvc,
+ que permite fazer chamadas HTTP simuladas:*/
+@ActiveProfiles("test")/*Ativa o profile test. Normalmente isso significa:
+banco H2 em memória
+configs específicas para teste
+desativar segurança, etc.
+*/
 @DisplayName("SocialMeli - Testes de Integração (Essencial)")
 class SocialMeliIntegrationTest {
 
