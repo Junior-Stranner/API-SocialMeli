@@ -25,6 +25,7 @@ public interface PostControllerDocs {
     @ApiResponse(responseCode = "201", description = "Publicação criada com sucesso")
     @ApiResponse(responseCode = "400", description = "Requisição inválida / validação falhou", content = @Content)
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
+    @ApiResponse(responseCode = "409", description = "Usuário informado não é um seller (apenas sellers podem publicar)", content = @Content)
     @PostMapping("/products/publish")
     ResponseEntity<Void> publish(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -49,6 +50,7 @@ public interface PostControllerDocs {
     )
     @ApiResponse(responseCode = "400", description = "Parâmetro 'order' inválido", content = @Content)
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
+    @ApiResponse(responseCode = "409", description = "Usuário informado é um seller (apenas buyers possuem feed de seguidos)", content = @Content)
     @GetMapping("/products/followed/{userId}/list")
     ResponseEntity<FollowedPostsResponse> getFollowedPostsLastTwoWeeks(
             @Parameter(in = ParameterIn.PATH, description = "ID do usuário (buyer)", example = "1")
@@ -68,6 +70,7 @@ public interface PostControllerDocs {
     @ApiResponse(responseCode = "201", description = "Promo criada com sucesso")
     @ApiResponse(responseCode = "400", description = "Requisição inválida / validação falhou", content = @Content)
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
+    @ApiResponse(responseCode = "409", description = "Usuário informado não é um seller (apenas sellers podem publicar promoções)", content = @Content)
     @PostMapping("/products/promo-post")
     ResponseEntity<Void> publishPromo(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -88,12 +91,12 @@ public interface PostControllerDocs {
             content = @Content(schema = @Schema(implementation = PromoCountResponse.class))
     )
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
+    @ApiResponse(responseCode = "409", description = "Usuário informado não é um seller", content = @Content)
     @GetMapping("/products/promo-post/count")
     ResponseEntity<PromoCountResponse> getPromoCount(
             @Parameter(in = ParameterIn.QUERY, description = "ID do seller", example = "2")
             @RequestParam long userId
     );
-
 
     @Operation(
             summary = "Listar publicações em promoção de um seller (US-0012 / Bônus)",
@@ -106,6 +109,7 @@ public interface PostControllerDocs {
     )
     @ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content)
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
+    @ApiResponse(responseCode = "409", description = "Usuário informado não é um seller", content = @Content)
     @GetMapping("/products/promo-post/list")
     ResponseEntity<PromoPostsResponse> getPromoPosts(
             @Parameter(in = ParameterIn.QUERY, description = "ID do seller", example = "3")
@@ -113,19 +117,28 @@ public interface PostControllerDocs {
     );
 
     @Operation(
-            summary = "Listar publicações em promoção de um seller (EXTRA/Bônus)",
-            description = "Retorna a lista de publicações em promoção do seller informado."
+            summary = "Listar publicações em promoção de um seller para um follower (EXTRA/Bônus)",
+            description = """
+                    Retorna a lista de publicações em promoção do seller informado para um buyer específico.
+                    Regras:
+                    - buyerId deve ser buyer
+                    - sellerId deve ser seller
+                    - buyerId deve seguir sellerId
+                    """
     )
     @ApiResponse(
             responseCode = "200",
             description = "Lista retornada com sucesso",
             content = @Content(schema = @Schema(implementation = PromoPostsResponse.class))
     )
+    @ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content)
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
-    @GetMapping("/products/promo-post/list")
+    @ApiResponse(responseCode = "409", description = "BuyerId não é buyer e/ou sellerId não é seller e/ou buyerId não segue sellerId", content = @Content)
+    @GetMapping("/products/promo-post/list/follower")
     ResponseEntity<PromoPostsResponse> getPromoPostsForFollower(
             @Parameter(in = ParameterIn.QUERY, description = "ID do seller", example = "2")
             @RequestParam long sellerId,
+            @Parameter(in = ParameterIn.QUERY, description = "ID do buyer", example = "1")
             @RequestParam long buyerId
     );
 }

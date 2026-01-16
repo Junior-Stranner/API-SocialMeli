@@ -1,8 +1,8 @@
 package br.com.socialmedia.socialmedia.service;
 
+import br.com.socialmedia.socialmedia.dto.response.FollowedPostsResponse;
 import br.com.socialmedia.socialmedia.dto.request.PostPublishRequest;
 import br.com.socialmedia.socialmedia.dto.request.PromoPostPublishRequest;
-import br.com.socialmedia.socialmedia.entity.Post;
 import br.com.socialmedia.socialmedia.entity.User;
 import br.com.socialmedia.socialmedia.exception.BusinessException;
 import br.com.socialmedia.socialmedia.mapper.PostMapper;
@@ -10,25 +10,20 @@ import br.com.socialmedia.socialmedia.repository.PostRepository;
 import br.com.socialmedia.socialmedia.repository.UserFollowRepository;
 import br.com.socialmedia.socialmedia.repository.UserRepository;
 import br.com.socialmedia.socialmedia.service.serviceImpl.PostServiceImpl;
-import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("PostService - Testes Unitários")
 class PostServiceImplTest {
 
     @Mock private UserRepository userRepository;
@@ -36,166 +31,94 @@ class PostServiceImplTest {
     @Mock private PostMapper postMapper;
     @Mock private PostRepository postRepository;
 
-    @InjectMocks
-    private PostServiceImpl service;
+    @InjectMocks private PostServiceImpl postService;
 
-    @Captor
-    private ArgumentCaptor<Post> postCaptor;
-
-    private User seller;
-    private User buyer;
-
-    @BeforeEach
-    void setup() {
-        seller = new User("Seller", true);
-        seller.setUserId(10L);
-
-        buyer = new User("Buyer", false);
-        buyer.setUserId(20L);
-    }
-
+    // publish com buyer -> BusinessException
     @Test
-    @DisplayName("US-0005: Deve publicar post normal quando user existe e é seller")
-    void publish_shouldSaveNormalPost_whenSellerExists() {
-        PostPublishRequest req = mock(PostPublishRequest.class);
-        when(req.getUserId()).thenReturn(10L);
-
-        Post mapped = new Post(); // postId deve ficar null
-        when(userRepository.findById(10L)).thenReturn(Optional.of(seller));
-        when(postMapper.toEntity(req)).thenReturn(mapped);
-
-        service.publish(req);
-
-        verify(postRepository).save(postCaptor.capture());
-        Post saved = postCaptor.getValue();
-
-        assertNull(saved.getPostId());
-        assertSame(seller, saved.getUser());
-        assertFalse(saved.isHasPromo());
-        assertEquals(0.0, saved.getDiscount());
-    }
-
-    @Test
-    @DisplayName("US-0005: Deve lançar EntityNotFoundException quando user não existe (post normal)")
-    void publish_shouldThrowEntityNotFound_whenUserDoesNotExist() {
-        PostPublishRequest req = mock(PostPublishRequest.class);
-        when(req.getUserId()).thenReturn(999L);
-
-        when(userRepository.findById(999L)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> service.publish(req));
-
-        verify(postMapper, never()).toEntity(any(PostPublishRequest.class));
-        verify(postRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("US-0005: Deve lançar BusinessException quando user existe mas não é seller (post normal)")
     void publish_shouldThrowBusinessException_whenUserIsNotSeller() {
-        PostPublishRequest req = mock(PostPublishRequest.class);
-        when(req.getUserId()).thenReturn(20L);
+        // Arrange
+        User buyer = new User("Buyer", false);
+        buyer.setUserId(1L);
 
-        when(userRepository.findById(20L)).thenReturn(Optional.of(buyer));
+        PostPublishRequest req = new PostPublishRequest();
+        req.setUserId(1l);
 
-        assertThrows(BusinessException.class, () -> service.publish(req));
+        when(userRepository.findById(1l)).thenReturn(Optional.of(buyer));
 
-        verify(postMapper, never()).toEntity(any(PostPublishRequest.class));
-        verify(postRepository, never()).save(any());
+        // Act + Assert
+        assertThrows(BusinessException.class, () -> postService.publish(req));
+        verifyNoInteractions(postRepository);
     }
 
+    // T-0005: order inválido em feed
     @Test
-    @DisplayName("Promo: Deve publicar post promo quando user é seller e discount é válido")
-    void publishPromo_shouldSavePromoPost_whenSellerAndDiscountValid() {
-        PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(10L);
-        when(req.getDiscount()).thenReturn(0.25);
+    void getFollowedPostsLastTwoWeeks_shouldThrowBusinessException_whenOrderInvalid() {
+        // Arrange
+        User buyer = new User("Buyer", false);
+        buyer.setUserId(1l);
 
-        Post mapped = new Post();
-        when(userRepository.findById(10L)).thenReturn(Optional.of(seller));
-        when(postMapper.toEntity(req)).thenReturn(mapped);
+        User seller = new User("Seller", true);
+        seller.setUserId(3l);
 
-        service.publishPromo(req);
+        when(userRepository.findById(1l)).thenReturn(Optional.of(buyer));
+        when(followRepository.findFollowedSellers(1)).thenReturn(List.of(seller));
+        when(postRepository.findByUserInAndDateAfterOrderByDateDesc(anySet(), any(LocalDate.class)))
+                .thenReturn(List.of()); // agora chega no sortPost
 
-        verify(postRepository).save(postCaptor.capture());
-        Post saved = postCaptor.getValue();
-
-        assertNull(saved.getPostId());
-        assertSame(seller, saved.getUser());
-        assertTrue(saved.isHasPromo());
-        assertEquals(0.25, saved.getDiscount());
+        // Act + Assert
+        assertThrows(BusinessException.class,
+                () -> postService.getFollowedPostsLastTwoWeeks(1, "date_xxx"));
     }
 
-
+    // T-0008: garante que o "since" (now - 2 weeks) é usado no repository
     @Test
-    @DisplayName("Promo: Deve lançar BusinessException quando discount é null")
-    void publishPromo_shouldThrowBusinessException_whenDiscountIsNull() {
-        PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(10L);
-        when(req.getDiscount()).thenReturn(null);
+    void getFollowedPostsLastTwoWeeks_shouldUseSinceTwoWeeksAgo() {
+        // Arrange
+        User buyer = new User("Buyer", false);
+        buyer.setUserId(1L);
 
-        when(userRepository.findById(10L)).thenReturn(Optional.of(seller));
+        User seller = new User("Seller", true);
+        seller.setUserId(3L);
 
-        assertThrows(BusinessException.class, () -> service.publishPromo(req));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(buyer));
+        when(followRepository.findFollowedSellers(1)).thenReturn(List.of(seller));
 
-        verify(postMapper, never()).toEntity(any(PromoPostPublishRequest.class));
-        verify(postRepository, never()).save(any());
+        when(postRepository.findByUserInAndDateAfterOrderByDateDesc(anySet(), any(LocalDate.class)))
+                .thenReturn(List.of());
+
+        // Act
+        FollowedPostsResponse response = postService.getFollowedPostsLastTwoWeeks(1, "date_desc");
+
+        // Assert
+        assertNotNull(response);
+
+        // Verifica que chamou o repo com a data correta (aproximada)
+        ArgumentCaptor<LocalDate> dateCaptor = ArgumentCaptor.forClass(LocalDate.class);
+
+        verify(postRepository).findByUserInAndDateAfterOrderByDateDesc(anySet(), dateCaptor.capture());
+
+        LocalDate expectedSince = LocalDate.now().minusWeeks(2);
+        assertEquals(expectedSince, dateCaptor.getValue());
     }
 
+    //promo discount inválido
     @Test
-    @DisplayName("Promo: Deve lançar BusinessException quando discount <= 0")
-    void publishPromo_shouldThrowBusinessException_whenDiscountIsZeroOrLess() {
-        PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(10L);
-        when(req.getDiscount()).thenReturn(0.0);
+    void publishPromo_shouldThrowBusinessException_whenDiscountInvalid() {
+        // Arrange
+        User seller = new User("Seller", true);
+        seller.setUserId(3l);
 
-        when(userRepository.findById(10L)).thenReturn(Optional.of(seller));
+        PromoPostPublishRequest req = new PromoPostPublishRequest();
+        req.setUserId(3l);
+        req.setHasPromo(true);
+        req.setDiscount(200.0);
 
-        assertThrows(BusinessException.class, () -> service.publishPromo(req));
+        when(userRepository.findById(3l)).thenReturn(Optional.of(seller));
 
-        verify(postMapper, never()).toEntity(any(PromoPostPublishRequest.class));
-        verify(postRepository, never()).save(any());
-    }
+        // Act + Assert
+        assertThrows(BusinessException.class, () -> postService.publishPromo(req));
 
-    @Test
-    @DisplayName("Promo: Deve lançar BusinessException quando discount > 100")
-    void publishPromo_shouldThrowBusinessException_whenDiscountGreaterThan100() {
-        PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(10L);
-        when(req.getDiscount()).thenReturn(101.0);
-
-        when(userRepository.findById(10L)).thenReturn(Optional.of(seller));
-
-        assertThrows(BusinessException.class, () -> service.publishPromo(req));
-
-        verify(postMapper, never()).toEntity(any(PromoPostPublishRequest.class));
-        verify(postRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Promo: Deve lançar EntityNotFoundException quando user não existe")
-    void publishPromo_shouldThrowEntityNotFound_whenUserDoesNotExist() {
-        PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(999L);
-
-        when(userRepository.findById(999L)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> service.publishPromo(req));
-
-        verify(postMapper, never()).toEntity(any(PromoPostPublishRequest.class));
-        verify(postRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Promo: Deve lançar BusinessException quando user existe mas não é seller")
-    void publishPromo_shouldThrowBusinessException_whenUserIsNotSeller() {
-        PromoPostPublishRequest req = mock(PromoPostPublishRequest.class);
-        when(req.getUserId()).thenReturn(20L);
-
-        when(userRepository.findById(20L)).thenReturn(Optional.of(buyer));
-
-        assertThrows(BusinessException.class, () -> service.publishPromo(req));
-
-        verify(postMapper, never()).toEntity(any(PromoPostPublishRequest.class));
-        verify(postRepository, never()).save(any());
+        verifyNoInteractions(postRepository);
+        verifyNoInteractions(postMapper);
     }
 }

@@ -14,6 +14,8 @@ import br.com.socialmedia.socialmedia.repository.UserFollowRepository;
 import br.com.socialmedia.socialmedia.repository.UserRepository;
 import br.com.socialmedia.socialmedia.service.IPostService;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,8 @@ import java.util.List;
 
 @Service
 public class PostServiceImpl implements IPostService {
+
+    private static final Logger log = LoggerFactory.getLogger(PostServiceImpl.class);
 
     private final UserRepository userRepository;
     private final UserFollowRepository followRepository;
@@ -41,6 +45,8 @@ public class PostServiceImpl implements IPostService {
 
     @Override
     public void publish(PostPublishRequest request) {
+        log.info("Publish post request: userId={}", request.getUserId());
+
         User seller = findSellerById(request.getUserId());
 
         Post entity = postMapper.toEntity(request);
@@ -49,30 +55,42 @@ public class PostServiceImpl implements IPostService {
         entity.setHasPromo(false);
         entity.setDiscount(0.0);
 
-        postRepository.save(entity);
+        Post saved = postRepository.save(entity);
+        log.info("Post published: postId={}, sellerId={}, promo={}", saved.getPostId(), seller.getUserId(), false);
     }
 
     @Override
     @Transactional(readOnly = true)
     public FollowedPostsResponse getFollowedPostsLastTwoWeeks(long userId, String order) {
-        findBuyerById(userId);
         LocalDate since = LocalDate.now().minusWeeks(2);
+        log.debug("Get followed posts last two weeks: buyerId={}, order={}, since={}", userId, order, since);
+
+        findBuyerById(userId);
 
         List<User> followedSellers = followRepository.findFollowedSellers(userId);
         if (followedSellers == null || followedSellers.isEmpty()) {
+            log.debug("Buyer {} follows no sellers. Returning empty feed.", userId);
             return new FollowedPostsResponse(userId, List.of());
         }
+
+        log.debug("Buyer {} follows {} sellers", userId, followedSellers.size());
 
         List<Post> posts = postRepository.findByUserInAndDateAfterOrderByDateDesc(
                 new HashSet<>(followedSellers), since);
 
+        log.debug("Posts fetched before sorting: buyerId={}, postsCount={}", userId, posts.size());
+
         posts = sortPost(posts, order);
+
+        log.debug("Feed ready: buyerId={}, postsCount={}", userId, posts.size());
 
         return new FollowedPostsResponse(userId, posts.stream().map(postMapper::toDto).toList());
     }
 
     @Override
     public void publishPromo(PromoPostPublishRequest request) {
+        log.info("Publish promo post request: userId={}, discount={}", request.getUserId(), request.getDiscount());
+
         User seller = findSellerById(request.getUserId());
         validatePromoDiscount(request.getDiscount());
 
@@ -82,20 +100,31 @@ public class PostServiceImpl implements IPostService {
         entity.setHasPromo(true);
         entity.setDiscount(request.getDiscount());
 
-        postRepository.save(entity);
+        Post saved = postRepository.save(entity);
+        log.info("Promo post published: postId={}, sellerId={}, discount={}", saved.getPostId(), seller.getUserId(), saved.getDiscount());
     }
 
     @Override
     public PromoCountResponse getPromoCount(long userId) {
+        log.debug("Get promo count: sellerId={}", userId);
+
         User seller = findSellerById(userId);
         long count = postRepository.countByUserIdAndHasPromoTrue(userId);
+
+        log.debug("Promo count computed: sellerId={}, count={}", userId, count);
+
         return new PromoCountResponse(userId, seller.getName(), count);
     }
 
     @Override
     public PromoPostsResponse getPromoPosts(long userId) {
+        log.debug("Get promo posts: sellerId={}", userId);
+
         User seller = findSellerById(userId);
         List<Post> promoPosts = postRepository.findPromoPostsBySellerIdFetchUser(userId);
+
+        log.debug("Promo posts fetched: sellerId={}, size={}", userId, promoPosts.size());
+
         return new PromoPostsResponse(
                 userId,
                 seller.getName(),
@@ -106,14 +135,21 @@ public class PostServiceImpl implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public PromoPostsResponse getPromoPostsForFollower(long buyerId, long sellerId) {
+        log.debug("Get promo posts for follower: buyerId={}, sellerId={}", buyerId, sellerId);
+
         findBuyerById(buyerId);
         User seller = findSellerById(sellerId);
 
-        if (!followRepository.existsByFollowerIdAndSellerId(buyerId, sellerId)) {
+        boolean follows = followRepository.existsByFollowerIdAndSellerId(buyerId, sellerId);
+        if (!follows) {
+            log.warn("Buyer {} does not follow seller {}. Denying promo posts access.", buyerId, sellerId);
             throw new BusinessException("Buyer does not follow this seller");
         }
 
         List<Post> promoPosts = postRepository.findPromoPostsBySellerIdFetchUser(sellerId);
+
+        log.debug("Promo posts returned to follower: buyerId={}, sellerId={}, size={}", buyerId, sellerId, promoPosts.size());
+
         return new PromoPostsResponse(
                 sellerId,
                 seller.getName(),
@@ -123,29 +159,43 @@ public class PostServiceImpl implements IPostService {
 
     private User findUserById(long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+                .orElseThrow(() -> {
+                    log.warn("User not found: userId={}", userId);
+                    return new EntityNotFoundException("User with id " + userId + " not found");
+                });
     }
 
-    private User findSellerById(long sellerId){
+    private User findSellerById(long sellerId) {
         User user = findUserById(sellerId);
         if (!user.isSeller()) {
+            log.warn("Role validation failed: userId={} is not a seller", user.getUserId());
             throw new BusinessException("User " + user.getUserId() + " is not a seller");
         }
         return user;
     }
 
-    private User findBuyerById(long buyerId){
+    private User findBuyerById(long buyerId) {
         User user = findUserById(buyerId);
         if (user.isSeller()) {
+            log.warn("Role validation failed: userId={} is a seller, not a buyer", user.getUserId());
             throw new BusinessException("User " + user.getUserId() + " is a seller, not a buyer");
         }
         return user;
     }
 
     private void validatePromoDiscount(Double discount) {
-        if (discount == null) throw new BusinessException("Discount is required for promo post");
-        if (discount <= 0) throw new BusinessException("Discount must be greater than 0");
-        if (discount > 100) throw new BusinessException("Discount cannot be greater than 100");
+        if (discount == null) {
+            log.warn("Invalid promo discount: discount=null");
+            throw new BusinessException("Discount is required for promo post");
+        }
+        if (discount <= 0) {
+            log.warn("Invalid promo discount: discount={} (must be > 0)", discount);
+            throw new BusinessException("Discount must be greater than 0");
+        }
+        if (discount >= 1) {
+            log.warn("Invalid promo discount: discount={} (must be < 1)", discount);
+            throw new BusinessException("Discount must be less than 1");
+        }
     }
 
     private List<Post> sortPost(List<Post> posts, String order) {
@@ -157,6 +207,8 @@ public class PostServiceImpl implements IPostService {
                     .sorted((a, b) -> a.getDate().compareTo(b.getDate()))
                     .toList();
         }
+
+        log.warn("Invalid order param for followed posts: order={}", order);
         throw new BusinessException("Invalid order param: " + order);
     }
 }

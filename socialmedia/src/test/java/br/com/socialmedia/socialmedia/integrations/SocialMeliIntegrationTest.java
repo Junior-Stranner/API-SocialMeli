@@ -48,10 +48,6 @@ class SocialMeliIntegrationTest {
         seller = userRepository.save(new User("Seller", true));
     }
 
-    // ==================================================================================
-    // US-0001: Seguir um vendedor (1 teste essencial)
-    // ==================================================================================
-
     @Test
     @DisplayName("US-0001: Deve seguir um vendedor e retornar 200")
     void us0001_follow_shouldReturn200_whenValid() throws Exception {
@@ -59,10 +55,6 @@ class SocialMeliIntegrationTest {
                         buyer.getUserId(), seller.getUserId()))
                 .andExpect(status().isOk());
     }
-
-    // ==================================================================================
-    // US-0002: Obter o número de seguidores de um vendedor (1 teste essencial)
-    // ==================================================================================
 
     @Test
     @DisplayName("US-0002: Deve retornar a contagem de seguidores do vendedor")
@@ -73,10 +65,6 @@ class SocialMeliIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.followers_count").value(1));
     }
-
-    // ==================================================================================
-    // US-0003: Lista de seguidores de um vendedor (1 teste essencial)
-    // ==================================================================================
 
     @Test
     @DisplayName("US-0003: Deve retornar lista de seguidores do vendedor")
@@ -89,10 +77,6 @@ class SocialMeliIntegrationTest {
                 .andExpect(jsonPath("$.followers").isArray());
     }
 
-    // ==================================================================================
-    // US-0004: Lista de vendedores seguidos por um usuário (1 teste essencial)
-    // ==================================================================================
-
     @Test
     @DisplayName("US-0004: Deve retornar lista de vendedores que o usuário segue")
     void us0004_getFollowedList_shouldReturnFollowedSellers() throws Exception {
@@ -104,15 +88,12 @@ class SocialMeliIntegrationTest {
                 .andExpect(jsonPath("$.followed").isArray());
     }
 
-    // ==================================================================================
-    // US-0005: Registrar uma nova publicação (1 teste essencial)
-    // ==================================================================================
-
     @Test
-    @DisplayName("US-0005: Deve registrar nova publicação e retornar 200")
-    void us0005_publish_shouldReturn200_whenValid() throws Exception {
+    @DisplayName("US-0005: Deve registrar nova publicação e retornar 201 (ou 200 se você mudou)")
+    void us0005_publish_shouldReturn201_whenValid() throws Exception {
         String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
+        // snake_case
         String requestBody = """
         {
           "userId": %d,
@@ -129,15 +110,11 @@ class SocialMeliIntegrationTest {
           "price": 299.90
         }
         """.formatted(seller.getUserId(), date);
-
         mockMvc.perform(post("/api/v1/posts/products/publish")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isCreated());    }
-
-    // ==================================================================================
-    // US-0006: Obter posts das últimas 2 semanas dos vendedores seguidos (1 teste essencial)
-    // ==================================================================================
+                .andExpect(status().isCreated());
+    }
 
     @Test
     @DisplayName("US-0006: Deve retornar posts das últimas 2 semanas para usuário que segue vendedor")
@@ -145,16 +122,11 @@ class SocialMeliIntegrationTest {
         followRepository.save(new UserFollow(buyer, seller));
         createPost(seller, LocalDate.now().minusDays(5), false);
 
-        // Ajuste o endpoint conforme seu controller real
         mockMvc.perform(get("/api/v1/posts/products/followed/{userId}/list", buyer.getUserId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user_id").value(buyer.getUserId()))
                 .andExpect(jsonPath("$.posts").isArray());
     }
-
-    // ==================================================================================
-    // US-0007: Deixar de seguir um vendedor (1 teste essencial)
-    // ==================================================================================
 
     @Test
     @DisplayName("US-0007: Deve deixar de seguir e retornar 200")
@@ -166,12 +138,8 @@ class SocialMeliIntegrationTest {
                 .andExpect(status().isOk());
     }
 
-    // ==================================================================================
-    // Promo essencial: publicar produto em promoção (1 teste)
-    // ==================================================================================
-
     @Test
-    @DisplayName("Promo: Deve registrar publicação com promoção e retornar 201")
+    @DisplayName("Promo: Deve registrar publicação com promoção e retornar 200")
     void promo_publishPromo_shouldReturn200_whenValid() throws Exception {
         String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
@@ -200,13 +168,9 @@ class SocialMeliIntegrationTest {
                 .andExpect(status().isOk());
     }
 
-    // ==================================================================================
-    // Promo essencial: obter contagem de produtos em promoção de um vendedor (1 teste)
-    // ==================================================================================
-
     @Test
-    @DisplayName("Promo: Deve retornar contagem de produtos em promoção do vendedor")
-    void promo_getPromoCount_shouldReturn200() throws Exception {
+    @DisplayName("US-0011: Deve retornar contagem de produtos em promoção do vendedor")
+    void us0011_getPromoCount_shouldReturn200() throws Exception {
         createPost(seller, LocalDate.now(), true);
         createPost(seller, LocalDate.now(), true);
         createPost(seller, LocalDate.now(), false);
@@ -217,9 +181,21 @@ class SocialMeliIntegrationTest {
                 .andExpect(jsonPath("$.promo_products_count").value(2));
     }
 
-    // ==================================================================================
-    // Auxiliar
-    // ==================================================================================
+    // US-0009 (ordenar por data)
+    @Test
+    @DisplayName("US-0009: Deve ordenar posts por data ASC corretamente")
+    void us0009_feed_shouldOrderByDateAsc() throws Exception {
+        followRepository.save(new UserFollow(buyer, seller));
+
+        createPost(seller, LocalDate.now().minusDays(10), false);
+        createPost(seller, LocalDate.now().minusDays(2), false);
+
+        mockMvc.perform(get("/api/v1/posts/products/followed/{userId}/list", buyer.getUserId())
+                        .param("order", "date_asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.posts[0].date").exists());
+
+    }
 
     private Post createPost(User user, LocalDate date, boolean hasPromo) {
         Post post = new Post();
